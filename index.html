@@ -3,33 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linked List Visualizer</title>
+    <title>Linked List Adventure - Who's Afraid of Linked Lists?</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-primary: #1a1a2e;
-            --bg-secondary: #16213e;
-            --text-primary: #e6e6e6;
-            --text-secondary: #b3b3b3;
-            --accent: #0f4c75;
-            --accent-light: #3282b8;
-            --node-color: #0f4c75;
-            --node-highlight: #3282b8;
-            --arrow-color: #bbbbbb;
-            --success: #4caf50;
-            --warning: #ff9800;
-            --danger: #f44336;
+            --primary: #6366f1;
+            --primary-light: #a5b4fc;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --gray: #64748b;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius: 12px;
+            --transition: all 0.3s ease;
+
+            /* Light theme (default) */
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+            --hover-color: #f1f5f9;
         }
 
-        .light-mode {
-            --bg-primary: #f5f5f5;
-            --bg-secondary: #ffffff;
-            --text-primary: #333333;
-            --text-secondary: #666666;
-            --accent: #2196f3;
-            --accent-light: #64b5f6;
-            --node-color: #2196f3;
-            --node-highlight: #64b5f6;
-            --arrow-color: #666666;
+        .dark-theme {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --border-color: #334155;
+            --hover-color: #334155;
         }
 
         * {
@@ -40,19 +44,17 @@
         }
 
         body {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            transition: background-color 0.3s, color 0.3s;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: var(--text-color);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            padding: 20px;
+            transition: var(--transition);
+            overflow-x: hidden;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
-            flex: 1;
         }
 
         header {
@@ -60,1008 +62,1979 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--accent);
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: headerSlide 1s ease-out;
         }
 
-        h1 {
+        @keyframes headerSlide {
+            0% { transform: translateY(-50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .header-left h1 {
             font-size: 2.5rem;
-            background: linear-gradient(90deg, var(--accent), var(--accent-light));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+            color: white;
+            margin-bottom: 5px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
-        .mode-toggle {
-            background: var(--accent);
-            border: none;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
+        .header-left .subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            padding: 10px 20px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
-            transition: background 0.3s;
+            gap: 10px;
+            font-weight: 600;
+            transition: var(--transition);
+            color: white;
         }
 
-        .mode-toggle:hover {
-            background: var(--accent-light);
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
         }
 
         .main-content {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: 300px 1fr;
             gap: 30px;
         }
 
-        .controls {
-            background-color: var(--bg-secondary);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        @media (max-width: 1100px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
         }
 
-        .control-group {
-            margin-bottom: 20px;
-        }
-
-        .control-group:last-child {
-            margin-bottom: 0;
-        }
-
-        .control-group h3 {
-            margin-bottom: 10px;
-            color: var(--accent-light);
-        }
-
-        .btn-group {
+        .controls-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+            flex-direction: column;
+            gap: 20px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideInLeft 0.8s ease-out;
         }
 
-        .btn {
-            background-color: var(--accent);
+        @keyframes slideInLeft {
+            0% { transform: translateX(-50px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+
+        .visualization-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        @keyframes slideInRight {
+            0% { transform: translateX(50px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+
+        .panel-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
             color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
 
-        .btn:hover {
-            background-color: var(--accent-light);
+        .input-group {
+            margin-bottom: 15px;
         }
 
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary {
-            background-color: var(--accent);
-        }
-
-        .btn-success {
-            background-color: var(--success);
-        }
-
-        .btn-warning {
-            background-color: var(--warning);
-        }
-
-        .btn-danger {
-            background-color: var(--danger);
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: white;
         }
 
         input, select {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            border: 1px solid var(--accent);
-            padding: 10px;
-            border-radius: 5px;
             width: 100%;
-            margin-bottom: 10px;
+            padding: 12px 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: var(--transition);
         }
 
         input:focus, select:focus {
             outline: none;
-            border-color: var(--accent-light);
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: rgba(255, 255, 255, 0.2);
         }
 
-        .visualization-area {
-            background-color: var(--bg-secondary);
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            min-height: 400px;
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
             position: relative;
             overflow: hidden;
         }
 
-        canvas {
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
             width: 100%;
             height: 100%;
-            display: block;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
         }
 
-        .explanation {
-            background-color: var(--bg-secondary);
-            padding: 20px;
+        button:hover::before {
+            left: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-info {
+            background: var(--info);
+            color: white;
+        }
+
+        .btn-light {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        /* Linked List Specific Styles */
+        .linked-list-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            min-height: 200px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius);
+            margin-bottom: 25px;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .node {
+            display: flex;
+            align-items: center;
+            position: relative;
+            margin: 10px;
+            animation: nodeAppear 0.5s ease-out;
+        }
+
+        @keyframes nodeAppear {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .node-value {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            transition: var(--transition);
+            position: relative;
+            z-index: 2;
+            border: 2px solid var(--primary);
+            backdrop-filter: blur(5px);
         }
 
-        .explanation h3 {
+        .node-pointer {
+            width: 40px;
+            height: 4px;
+            background: var(--primary);
+            position: relative;
+            animation: pointerPulse 2s infinite;
+        }
+
+        @keyframes pointerPulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+
+        .node-pointer::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: -8px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid var(--primary);
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+        }
+
+        .doubly-pointer {
+            width: 40px;
+            height: 4px;
+            background: var(--primary);
+            position: relative;
+            animation: pointerPulse 2s infinite;
+        }
+
+        .doubly-pointer::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: -8px;
+            width: 0;
+            height: 0;
+            border-right: 10px solid var(--primary);
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+        }
+
+        .doubly-pointer::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: -8px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid var(--primary);
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+        }
+
+        .circular-connector {
+            position: absolute;
+            bottom: -60px;
+            left: 50%;
+            width: 2px;
+            height: 60px;
+            background: var(--primary);
+        }
+
+        .circular-connector::after {
+            content: '';
+            position: absolute;
+            bottom: -40px;
+            left: -100px;
+            width: 200px;
+            height: 40px;
+            border-bottom: 2px solid var(--primary);
+            border-left: 2px solid var(--primary);
+            border-right: 2px solid var(--primary);
+            border-bottom-left-radius: 100px;
+            border-bottom-right-radius: 100px;
+        }
+
+        .null-node {
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            font-size: 1rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.7);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+        }
+
+        .list-type-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .list-type {
+            text-align: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+            color: white;
+        }
+
+        .list-type.active {
+            background: var(--primary-light);
+            color: white;
+            border-color: var(--primary);
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .list-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: white;
+        }
+
+        .node.inserted {
+            animation: slideIn 0.5s ease, bounce 0.5s ease 0.5s, nodeGlow 2s ease;
+        }
+
+        .node.deleted {
+            animation: fadeOut 0.5s ease forwards, shrink 0.5s ease;
+        }
+
+        .node.updated {
+            animation: colorChange 0.8s ease, pulse 1s ease;
+        }
+
+        .node.searching .node-value {
+            animation: glow 0.8s ease infinite alternate, shake 0.5s ease infinite;
+        }
+
+        .node.found .node-value {
+            background: var(--secondary);
+            color: white;
+            animation: bounce 0.5s ease, celebrate 1s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                transform: scale(1);
+                opacity: 1;
+            }
+            to {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+
+        @keyframes shrink {
+            to {
+                transform: scale(0);
+            }
+        }
+
+        @keyframes colorChange {
+            0% {
+                background: rgba(255, 255, 255, 0.2);
+            }
+            50% {
+                background: var(--info);
+                color: white;
+                transform: scale(1.1);
+            }
+            100% {
+                background: rgba(255, 255, 255, 0.2);
+            }
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 5px var(--warning);
+            }
+            to {
+                box-shadow: 0 0 20px var(--warning);
+            }
+        }
+
+        @keyframes nodeGlow {
+            0% { box-shadow: 0 0 5px var(--secondary); }
+            50% { box-shadow: 0 0 20px var(--secondary); }
+            100% { box-shadow: 0 0 5px var(--secondary); }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes celebrate {
+            0% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.2) rotate(5deg); }
+            50% { transform: scale(1.2) rotate(-5deg); }
+            75% { transform: scale(1.2) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 40px 20px;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+        }
+
+        .list-length {
+            font-weight: 600;
+            color: var(--primary-light);
+        }
+
+        .operation-status {
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 15px;
-            color: var(--accent-light);
+        }
+
+        .clear-history {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .clear-history:hover {
+            background: var(--danger);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .explanation-panel {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            margin-top: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .explanation-content {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            line-height: 1.6;
+            color: white;
         }
 
         .step {
             margin-bottom: 10px;
-            padding: 10px;
-            border-left: 3px solid var(--accent);
-            background-color: rgba(15, 76, 117, 0.1);
+            padding: 12px 15px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--primary);
+            animation: stepAppear 0.5s ease-out;
         }
 
-        .step.active {
-            background-color: rgba(15, 76, 117, 0.3);
-            border-left-color: var(--accent-light);
+        @keyframes stepAppear {
+            0% { transform: translateX(-20px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
         }
 
-        .speed-control {
+        .step.insert {
+            border-left-color: var(--secondary);
+        }
+
+        .step.delete {
+            border-left-color: var(--danger);
+        }
+
+        .step.update {
+            border-left-color: var(--info);
+        }
+
+        .step.search {
+            border-left-color: var(--warning);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: var(--radius);
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            0% { transform: translateY(-50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: white;
             display: flex;
             align-items: center;
             gap: 10px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
 
-        .speed-slider {
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            padding: 5px;
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            color: var(--danger);
+            transform: scale(1.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-actions button {
             flex: 1;
         }
 
-        .current-operation {
-            font-weight: bold;
-            color: var(--accent-light);
-            margin-bottom: 10px;
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
         }
 
-        footer {
-            text-align: center;
-            padding: 20px;
-            margin-top: 30px;
-            color: var(--text-secondary);
+        .quick-action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: white;
+        }
+
+        .quick-action-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .quick-action-icon {
+            font-size: 1.8rem;
+            color: var(--primary-light);
+        }
+
+        .quick-action-btn:hover .quick-action-icon {
+            color: white;
+            animation: bounce 0.5s ease;
+        }
+
+        .quick-action-text {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* Horizontal Controls Bar */
+        .horizontal-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius);
+            flex-wrap: wrap;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .horizontal-control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+        }
+
+        .horizontal-control-group label {
+            margin-bottom: 0;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .horizontal-control-group input {
+            width: auto;
+            min-width: 120px;
+        }
+
+        .horizontal-btn {
+            padding: 10px 16px;
+            font-size: 0.9rem;
+        }
+
+        .horizontal-btn i {
             font-size: 0.9rem;
         }
 
         @media (max-width: 768px) {
-            .btn-group {
+            .horizontal-controls {
                 flex-direction: column;
+                align-items: stretch;
             }
-            
-            .btn {
-                width: 100%;
+
+            .horizontal-control-group {
+                justify-content: space-between;
             }
+
+            .horizontal-control-group input {
+                flex: 1;
+            }
+        }
+
+        /* Fun Elements */
+        .fun-title {
+            text-align: center;
+            margin-bottom: 20px;
+            animation: titleColorShift 5s infinite alternate;
+        }
+
+        @keyframes titleColorShift {
+            0% { color: #ff9a9e; }
+            25% { color: #fad0c4; }
+            50% { color: #a1c4fd; }
+            75% { color: #c2e9fb; }
+            100% { color: #ff9a9e; }
+        }
+
+        .floating-element {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+            100% { transform: translateY(0) rotate(360deg); }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--secondary);
+            opacity: 0;
+            z-index: 1001;
+        }
+
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+        }
+
+        .motivational-message {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius);
+            color: white;
+            font-style: italic;
+            animation: messagePulse 3s infinite;
+        }
+
+        @keyframes messagePulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
         }
     </style>
 </head>
 <body>
+    <!-- Floating elements for visual interest -->
+    <div class="floating-element" style="top: 10%; left: 5%; animation-delay: 0s;"></div>
+    <div class="floating-element" style="top: 20%; right: 10%; animation-delay: 1s;"></div>
+    <div class="floating-element" style="bottom: 15%; left: 15%; animation-delay: 2s;"></div>
+    <div class="floating-element" style="bottom: 25%; right: 5%; animation-delay: 3s;"></div>
+
+    <!-- Celebration animation container -->
+    <div class="celebration" id="celebration"></div>
+
     <div class="container">
         <header>
-            <h1>Linked List Visualizer</h1>
-            <button class="mode-toggle" id="modeToggle">
-                <span>Light Mode</span>
-            </button>
+            <div class="header-left">
+                <h1 class="fun-title">Linked List Adventure</h1>
+                <p class="subtitle">Who's Afraid of Linked Lists? Not You!</p>
+            </div>
+            <div class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+                <span>Dark Mode</span>
+            </div>
         </header>
-        
+
         <div class="main-content">
-            <div class="controls">
+            <div class="controls-section">
                 <div class="control-group">
-                    <h3>Linked List Type</h3>
-                    <div class="btn-group">
-                        <button class="btn btn-primary list-type" data-type="singly">Singly Linked List</button>
-                        <button class="btn btn-primary list-type" data-type="doubly">Doubly Linked List</button>
-                        <button class="btn btn-primary list-type" data-type="circular">Circular Linked List</button>
+                    <h2 class="panel-title">
+                        <i class="fas fa-project-diagram"></i> List Type
+                    </h2>
+                    <div class="list-type-selector">
+                        <div class="list-type active" data-type="singly">Singly</div>
+                        <div class="list-type" data-type="doubly">Doubly</div>
+                        <div class="list-type" data-type="circular">Circular</div>
                     </div>
                 </div>
                 
                 <div class="control-group">
-                    <h3>Operations</h3>
-                    <div class="btn-group">
-                        <button class="btn btn-success" id="insertAtBeginning">Insert at Beginning</button>
-                        <button class="btn btn-success" id="insertAtEnd">Insert at End</button>
-                        <button class="btn btn-success" id="insertAtPosition">Insert at Position</button>
-                        <button class="btn btn-warning" id="deleteNode">Delete Node</button>
-                        <button class="btn btn-danger" id="reverseList">Reverse List</button>
-                        <button class="btn btn-primary" id="fastSlowDemo">Fast-Slow Pointer Demo</button>
+                    <h2 class="panel-title">
+                        <i class="fas fa-bolt"></i> Quick Actions
+                    </h2>
+                    <div class="quick-actions">
+                        <div class="quick-action-btn" id="insertHeadAction">
+                            <div class="quick-action-icon">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                            <div class="quick-action-text">Insert Head</div>
+                        </div>
+                        <div class="quick-action-btn" id="insertTailAction">
+                            <div class="quick-action-icon">
+                                <i class="fas fa-plus-square"></i>
+                            </div>
+                            <div class="quick-action-text">Insert Tail</div>
+                        </div>
+                        <div class="quick-action-btn" id="deleteHeadAction">
+                            <div class="quick-action-icon">
+                                <i class="fas fa-minus-circle"></i>
+                            </div>
+                            <div class="quick-action-text">Delete Head</div>
+                        </div>
+                        <div class="quick-action-btn" id="deleteTailAction">
+                            <div class="quick-action-icon">
+                                <i class="fas fa-minus-square"></i>
+                            </div>
+                            <div class="quick-action-text">Delete Tail</div>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="control-group">
-                    <h3>Node Value</h3>
-                    <input type="text" id="nodeValue" placeholder="Enter node value" maxlength="10">
-                </div>
-                
-                <div class="control-group">
-                    <h3>Position/Value for Operation</h3>
-                    <input type="text" id="operationValue" placeholder="Enter position or value">
-                </div>
-                
-                <div class="control-group">
-                    <h3>Animation Speed</h3>
-                    <div class="speed-control">
-                        <span>Slow</span>
-                        <input type="range" id="speedSlider" class="speed-slider" min="1" max="10" value="5">
-                        <span>Fast</span>
+                    <h2 class="panel-title">
+                        <i class="fas fa-cogs"></i> Advanced Operations
+                    </h2>
+                    <div class="button-group">
+                        <button class="btn-secondary" id="insertAtAction">
+                            <i class="fas fa-plus"></i> Insert At Index
+                        </button>
+                        <button class="btn-danger" id="deleteAtAction">
+                            <i class="fas fa-minus"></i> Delete At Index
+                        </button>
+                        <button class="btn-warning" id="searchAction">
+                            <i class="fas fa-search"></i> Search Value
+                        </button>
+                        <button class="btn-info" id="reverseAction">
+                            <i class="fas fa-exchange-alt"></i> Reverse List
+                        </button>
+                        <button class="btn-light" id="clearAction">
+                            <i class="fas fa-trash"></i> Clear List
+                        </button>
                     </div>
+                </div>
+                
+                <div class="control-group">
+                    <h2 class="panel-title">
+                        <i class="fas fa-info-circle"></i> List Information
+                    </h2>
+                    <div class="list-info">
+                        <p><strong>Current List:</strong> <span id="currentListType">Singly Linked List</span></p>
+                        <p><strong>Head:</strong> <span id="headValue">None</span></p>
+                        <p><strong>Tail:</strong> <span id="tailValue">None</span></p>
+                        <p><strong>Length:</strong> <span id="listLength">0</span></p>
+                    </div>
+                </div>
+
+                <div class="motivational-message" id="motivationalMessage">
+                    You're doing great! Keep exploring linked lists!
                 </div>
             </div>
             
-            <div class="visualization-area">
-                <div class="current-operation" id="currentOperation">No operation in progress</div>
-                <canvas id="linkedListCanvas"></canvas>
-            </div>
-            
-            <div class="explanation">
-                <h3>Step-by-Step Explanation</h3>
-                <div id="explanationContent">
-                    <div class="step">Select a linked list type and operation to begin visualization.</div>
+            <div class="visualization-section">
+                <!-- Horizontal Controls Bar -->
+                <div class="horizontal-controls">
+                    <div class="horizontal-control-group">
+                        <label for="animationSpeed">Animation Speed:</label>
+                        <input type="range" id="animationSpeed" min="1" max="5" value="3">
+                        <span id="speedValue">Medium</span>
+                    </div>
+                    
+                    <button class="btn-primary horizontal-btn" id="generateBtn">
+                        <i class="fas fa-dice"></i> Generate List
+                    </button>
+                    
+                    <button class="btn-light horizontal-btn" id="resetBtn">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                </div>
+
+                <div class="status-bar">
+                    <div class="list-length">List Length: <span id="listLengthDisplay">0</span></div>
+                    <div class="operation-status" id="operationStatus">Ready to visualize linked list operations</div>
+                </div>
+                
+                <div class="linked-list-container" id="linkedListContainer">
+                    <div class="empty-state">
+                        <p>Your linked list is empty. Add some nodes to get started!</p>
+                    </div>
+                </div>
+
+                <!-- About Linked Lists Section -->
+                <div class="explanation-panel">
+                    <div class="history-header">
+                        <div class="panel-title">
+                            <i class="fas fa-history"></i> Operation History
+                        </div>
+                        <button class="clear-history" id="clearHistory">
+                            <i class="fas fa-trash"></i> Clear History
+                        </button>
+                    </div>
+                    <div class="explanation-content" id="explanationContent">
+                        <div class="step">
+                            <strong>Welcome to the Linked List Adventure!</strong><br>
+                            This tool helps you understand how linked lists work by visualizing common operations. Use the quick actions to perform operations and see the results here.
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        
-        <footer>
-            <p>Linked List Visualizer - Created for IT students and non-tech backgrounds</p>
-        </footer>
+    </div>
+
+    <!-- Insert Head Modal -->
+    <div class="modal" id="insertHeadModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-plus-circle"></i>
+                    Insert at Head
+                </div>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="input-group">
+                <label for="insertHeadValue">Value (1-99)</label>
+                <input type="number" id="insertHeadValue" placeholder="Enter a number" min="1" max="99">
+                <div class="error-message" id="insertHeadValueError">Please enter a valid number between 1 and 99</div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-light" id="cancelInsertHead">Cancel</button>
+                <button class="btn-secondary" id="confirmInsertHead">Insert</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insert Tail Modal -->
+    <div class="modal" id="insertTailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-plus-square"></i>
+                    Insert at Tail
+                </div>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="input-group">
+                <label for="insertTailValue">Value (1-99)</label>
+                <input type="number" id="insertTailValue" placeholder="Enter a number" min="1" max="99">
+                <div class="error-message" id="insertTailValueError">Please enter a valid number between 1 and 99</div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-light" id="cancelInsertTail">Cancel</button>
+                <button class="btn-secondary" id="confirmInsertTail">Insert</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insert At Index Modal -->
+    <div class="modal" id="insertAtModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-plus"></i>
+                    Insert at Index
+                </div>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="input-group">
+                <label for="insertAtValue">Value (1-99)</label>
+                <input type="number" id="insertAtValue" placeholder="Enter a number" min="1" max="99">
+                <div class="error-message" id="insertAtValueError">Please enter a valid number between 1 and 99</div>
+            </div>
+            <div class="input-group">
+                <label for="insertAtIndex">Index</label>
+                <input type="number" id="insertAtIndex" placeholder="Enter index position">
+                <div class="error-message" id="insertAtIndexError">Please enter a valid index</div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-light" id="cancelInsertAt">Cancel</button>
+                <button class="btn-secondary" id="confirmInsertAt">Insert</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete At Index Modal -->
+    <div class="modal" id="deleteAtModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-minus"></i>
+                    Delete at Index
+                </div>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="input-group">
+                <label for="deleteAtIndex">Index</label>
+                <input type="number" id="deleteAtIndex" placeholder="Enter index to delete">
+                <div class="error-message" id="deleteAtIndexError">Please enter a valid index</div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-light" id="cancelDeleteAt">Cancel</button>
+                <button class="btn-danger" id="confirmDeleteAt">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Modal -->
+    <div class="modal" id="searchModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-search"></i>
+                    Search Value
+                </div>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="input-group">
+                <label for="searchValue">Value to Search (1-99)</label>
+                <input type="number" id="searchValue" placeholder="Enter value to search" min="1" max="99">
+                <div class="error-message" id="searchValueError">Please enter a valid number between 1 and 99</div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-light" id="cancelSearch">Cancel</button>
+                <button class="btn-warning" id="confirmSearch">Search</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Linked List Visualization Implementation
-        document.addEventListener('DOMContentLoaded', function() {
-            // DOM Elements
-            const canvas = document.getElementById('linkedListCanvas');
-            const ctx = canvas.getContext('2d');
-            const modeToggle = document.getElementById('modeToggle');
-            const listTypeButtons = document.querySelectorAll('.list-type');
-            const operationButtons = {
-                insertAtBeginning: document.getElementById('insertAtBeginning'),
-                insertAtEnd: document.getElementById('insertAtEnd'),
-                insertAtPosition: document.getElementById('insertAtPosition'),
-                deleteNode: document.getElementById('deleteNode'),
-                reverseList: document.getElementById('reverseList'),
-                fastSlowDemo: document.getElementById('fastSlowDemo')
-            };
-            const nodeValueInput = document.getElementById('nodeValue');
-            const operationValueInput = document.getElementById('operationValue');
-            const speedSlider = document.getElementById('speedSlider');
-            const currentOperation = document.getElementById('currentOperation');
-            const explanationContent = document.getElementById('explanationContent');
-            
-            // Canvas setup
-            function resizeCanvas() {
-                canvas.width = canvas.offsetWidth;
-                canvas.height = canvas.offsetHeight;
-                drawLinkedList();
-            }
-            
-            window.addEventListener('resize', resizeCanvas);
-            resizeCanvas();
-            
-            // Theme management
-            modeToggle.addEventListener('click', function() {
-                document.body.classList.toggle('light-mode');
-                modeToggle.querySelector('span').textContent = 
-                    document.body.classList.contains('light-mode') ? 'Dark Mode' : 'Light Mode';
-                drawLinkedList();
-            });
-            
-            // Linked List Implementation
-            class Node {
-                constructor(value) {
-                    this.value = value;
-                    this.next = null;
-                    this.prev = null;
-                }
-            }
-            
-            class LinkedList {
-                constructor(type = 'singly') {
-                    this.head = null;
-                    this.tail = null;
-                    this.type = type;
-                    this.size = 0;
-                }
-                
-                // Insert at beginning
-                insertAtBeginning(value) {
-                    const newNode = new Node(value);
-                    
-                    if (this.head === null) {
-                        this.head = newNode;
-                        this.tail = newNode;
-                        if (this.type === 'circular') {
-                            newNode.next = newNode;
-                            if (this.type === 'doubly' || this.type === 'circular') {
-                                newNode.prev = newNode;
-                            }
-                        }
-                    } else {
-                        newNode.next = this.head;
-                        if (this.type === 'doubly' || this.type === 'circular') {
-                            this.head.prev = newNode;
-                        }
-                        this.head = newNode;
-                        
-                        if (this.type === 'circular') {
-                            this.tail.next = this.head;
-                            if (this.type === 'doubly' || this.type === 'circular') {
-                                this.head.prev = this.tail;
-                            }
-                        }
-                    }
-                    
-                    this.size++;
-                    return newNode;
-                }
-                
-                // Insert at end
-                insertAtEnd(value) {
-                    const newNode = new Node(value);
-                    
-                    if (this.head === null) {
-                        return this.insertAtBeginning(value);
-                    } else {
-                        this.tail.next = newNode;
-                        if (this.type === 'doubly' || this.type === 'circular') {
-                            newNode.prev = this.tail;
-                        }
-                        this.tail = newNode;
-                        
-                        if (this.type === 'circular') {
-                            this.tail.next = this.head;
-                            if (this.type === 'doubly' || this.type === 'circular') {
-                                this.head.prev = this.tail;
-                            }
-                        }
-                    }
-                    
-                    this.size++;
-                    return newNode;
-                }
-                
-                // Insert at position
-                insertAtPosition(value, position) {
-                    if (position <= 0) {
-                        return this.insertAtBeginning(value);
-                    } else if (position >= this.size) {
-                        return this.insertAtEnd(value);
-                    } else {
-                        const newNode = new Node(value);
-                        let current = this.head;
-                        let index = 0;
-                        
-                        while (index < position - 1) {
-                            current = current.next;
-                            index++;
-                        }
-                        
-                        newNode.next = current.next;
-                        if (this.type === 'doubly' || this.type === 'circular') {
-                            newNode.prev = current;
-                            if (newNode.next) {
-                                newNode.next.prev = newNode;
-                            }
-                        }
-                        current.next = newNode;
-                        
-                        this.size++;
-                        return newNode;
-                    }
-                }
-                
-                // Delete node by value
-                deleteNode(value) {
-                    if (this.head === null) return null;
-                    
-                    let current = this.head;
-                    let previous = null;
-                    
-                    // If head needs to be deleted
-                    if (current.value === value) {
-                        this.head = current.next;
-                        
-                        if (this.type === 'doubly' || this.type === 'circular') {
-                            if (this.head) {
-                                this.head.prev = null;
-                            }
-                        }
-                        
-                        if (this.type === 'circular') {
-                            if (this.head === null) {
-                                this.tail = null;
-                            } else {
-                                this.tail.next = this.head;
-                                if (this.type === 'doubly' || this.type === 'circular') {
-                                    this.head.prev = this.tail;
-                                }
-                            }
-                        }
-                        
-                        this.size--;
-                        return current;
-                    }
-                    
-                    // Traverse to find the node
-                    while (current !== null && current.value !== value) {
-                        previous = current;
-                        current = current.next;
-                        
-                        // Prevent infinite loop in circular lists
-                        if (current === this.head) break;
-                    }
-                    
-                    if (current === null || current.value !== value) return null;
-                    
-                    // Node found, delete it
-                    previous.next = current.next;
-                    
-                    if (this.type === 'doubly' || this.type === 'circular') {
-                        if (current.next) {
-                            current.next.prev = previous;
-                        }
-                    }
-                    
-                    if (current === this.tail) {
-                        this.tail = previous;
-                    }
-                    
-                    if (this.type === 'circular' && this.tail) {
-                        this.tail.next = this.head;
-                        if (this.type === 'doubly' || this.type === 'circular') {
-                            this.head.prev = this.tail;
-                        }
-                    }
-                    
-                    this.size--;
-                    return current;
-                }
-                
-                // Reverse the linked list
-                reverse() {
-                    if (this.head === null || this.head.next === null) return;
-                    
-                    let previous = null;
-                    let current = this.head;
-                    let next = null;
-                    
-                    this.tail = this.head;
-                    
-                    while (current !== null) {
-                        next = current.next;
-                        current.next = previous;
-                        
-                        if (this.type === 'doubly' || this.type === 'circular') {
-                            current.prev = next;
-                        }
-                        
-                        previous = current;
-                        current = next;
-                        
-                        // For circular lists, we need to break when we complete the cycle
-                        if (this.type === 'circular' && current === this.head) break;
-                    }
-                    
-                    this.head = previous;
-                    
-                    if (this.type === 'circular') {
-                        this.tail.next = this.head;
-                        if (this.type === 'doubly' || this.type === 'circular') {
-                            this.head.prev = this.tail;
-                        }
-                    }
-                }
-            }
-            
-            // Visualization state
-            let currentList = new LinkedList('singly');
-            let animationSpeed = 500;
-            let highlightedNodes = new Set();
-            let animationInProgress = false;
-            
-            // Update animation speed based on slider
-            speedSlider.addEventListener('input', function() {
-                animationSpeed = 1100 - (this.value * 100);
-            });
-            
-            // List type selection
-            listTypeButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    if (animationInProgress) return;
-                    
-                    listTypeButtons.forEach(btn => btn.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    currentList = new LinkedList(this.dataset.type);
-                    updateExplanation('Created a new ' + getListTypeName(this.dataset.type) + '.');
-                    drawLinkedList();
+        // Linked List state
+        let listType = 'singly';
+        let linkedList = [];
+        let animationSpeed = 500; // Medium speed by default
+        let operationHistory = [];
+
+        // DOM Elements
+        const linkedListContainer = document.getElementById('linkedListContainer');
+        const listLengthDisplay = document.getElementById('listLengthDisplay');
+        const operationStatus = document.getElementById('operationStatus');
+        const animationSpeedSlider = document.getElementById('animationSpeed');
+        const speedValue = document.getElementById('speedValue');
+        const generateBtn = document.getElementById('generateBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const explanationContent = document.getElementById('explanationContent');
+        const themeToggle = document.getElementById('themeToggle');
+        const clearHistory = document.getElementById('clearHistory');
+        const currentListType = document.getElementById('currentListType');
+        const headValue = document.getElementById('headValue');
+        const tailValue = document.getElementById('tailValue');
+        const listLength = document.getElementById('listLength');
+        const motivationalMessage = document.getElementById('motivationalMessage');
+        const celebration = document.getElementById('celebration');
+
+        // List type selector
+        const listTypes = document.querySelectorAll('.list-type');
+
+        // Quick action buttons
+        const insertHeadAction = document.getElementById('insertHeadAction');
+        const insertTailAction = document.getElementById('insertTailAction');
+        const deleteHeadAction = document.getElementById('deleteHeadAction');
+        const deleteTailAction = document.getElementById('deleteTailAction');
+        const insertAtAction = document.getElementById('insertAtAction');
+        const deleteAtAction = document.getElementById('deleteAtAction');
+        const searchAction = document.getElementById('searchAction');
+        const reverseAction = document.getElementById('reverseAction');
+        const clearAction = document.getElementById('clearAction');
+
+        // Modal elements
+        const insertHeadModal = document.getElementById('insertHeadModal');
+        const insertTailModal = document.getElementById('insertTailModal');
+        const insertAtModal = document.getElementById('insertAtModal');
+        const deleteAtModal = document.getElementById('deleteAtModal');
+        const searchModal = document.getElementById('searchModal');
+
+        // Motivational messages
+        const motivationalMessages = [
+            "You're doing great! Keep exploring linked lists!",
+            "Linked lists are no match for your skills!",
+            "Every operation brings you closer to linked list mastery!",
+            "You're becoming a data structures expert!",
+            "Who's afraid of linked lists? Not you!",
+            "Your linked list skills are growing with every click!",
+            "You're making complex concepts look easy!",
+            "Keep going - you're on the path to coding greatness!"
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateListInfo();
+            renderLinkedList();
+            updateMotivationalMessage();
+
+            // Event listeners
+            generateBtn.addEventListener('click', generateRandomList);
+            resetBtn.addEventListener('click', resetList);
+            themeToggle.addEventListener('click', toggleTheme);
+            clearHistory.addEventListener('click', clearOperationHistory);
+            animationSpeedSlider.addEventListener('input', updateSpeed);
+
+            // List type listeners
+            listTypes.forEach(type => {
+                type.addEventListener('click', () => {
+                    listTypes.forEach(t => t.classList.remove('active'));
+                    type.classList.add('active');
+                    listType = type.getAttribute('data-type');
+                    updateListInfo();
+                    renderLinkedList();
+                    addToHistory(`Switched to ${getListTypeName()}`, 'info');
+                    updateMotivationalMessage();
                 });
             });
-            
-            // Helper function to get list type name
-            function getListTypeName(type) {
-                switch(type) {
-                    case 'singly': return 'Singly Linked List';
-                    case 'doubly': return 'Doubly Linked List';
-                    case 'circular': return 'Circular Linked List';
-                    default: return 'Linked List';
-                }
-            }
-            
-            // Operation handlers
-            operationButtons.insertAtBeginning.addEventListener('click', function() {
-                if (animationInProgress) return;
-                
-                const value = nodeValueInput.value.trim();
-                if (!value) {
-                    updateExplanation('Please enter a value for the new node.');
-                    return;
-                }
-                
-                performOperation('insertAtBeginning', value);
+
+            // Quick action listeners
+            insertHeadAction.addEventListener('click', () => openModal('insertHead'));
+            insertTailAction.addEventListener('click', () => openModal('insertTail'));
+            deleteHeadAction.addEventListener('click', deleteHead);
+            deleteTailAction.addEventListener('click', deleteTail);
+            insertAtAction.addEventListener('click', () => openModal('insertAt'));
+            deleteAtAction.addEventListener('click', () => openModal('deleteAt'));
+            searchAction.addEventListener('click', () => openModal('search'));
+            reverseAction.addEventListener('click', reverseList);
+            clearAction.addEventListener('click', clearList);
+
+            // Modal close listeners
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', closeAllModals);
             });
-            
-            operationButtons.insertAtEnd.addEventListener('click', function() {
-                if (animationInProgress) return;
-                
-                const value = nodeValueInput.value.trim();
-                if (!value) {
-                    updateExplanation('Please enter a value for the new node.');
-                    return;
-                }
-                
-                performOperation('insertAtEnd', value);
+
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) closeAllModals();
+                });
             });
-            
-            operationButtons.insertAtPosition.addEventListener('click', function() {
-                if (animationInProgress) return;
-                
-                const value = nodeValueInput.value.trim();
-                const position = parseInt(operationValueInput.value);
-                
-                if (!value) {
-                    updateExplanation('Please enter a value for the new node.');
-                    return;
-                }
-                
-                if (isNaN(position)) {
-                    updateExplanation('Please enter a valid position.');
-                    return;
-                }
-                
-                performOperation('insertAtPosition', value, position);
-            });
-            
-            operationButtons.deleteNode.addEventListener('click', function() {
-                if (animationInProgress) return;
-                
-                const value = operationValueInput.value.trim();
-                if (!value) {
-                    updateExplanation('Please enter a value to delete.');
-                    return;
-                }
-                
-                performOperation('deleteNode', value);
-            });
-            
-            operationButtons.reverseList.addEventListener('click', function() {
-                if (animationInProgress) return;
-                
-                performOperation('reverseList');
-            });
-            
-            operationButtons.fastSlowDemo.addEventListener('click', function() {
-                if (animationInProgress) return;
-                
-                performOperation('fastSlowDemo');
-            });
-            
-            // Perform operation with animation
-            async function performOperation(operation, ...args) {
-                if (animationInProgress) return;
-                
-                animationInProgress = true;
-                highlightedNodes.clear();
-                
-                switch(operation) {
-                    case 'insertAtBeginning':
-                        currentOperation.textContent = 'Inserting at beginning...';
-                        updateExplanation(`Creating a new node with value "${args[0]}" and inserting it at the beginning of the list.`);
-                        await animateNodeInsertion(() => currentList.insertAtBeginning(args[0]));
-                        updateExplanation(`Node with value "${args[0]}" successfully inserted at the beginning.`);
-                        break;
-                        
-                    case 'insertAtEnd':
-                        currentOperation.textContent = 'Inserting at end...';
-                        updateExplanation(`Creating a new node with value "${args[0]}" and inserting it at the end of the list.`);
-                        await animateNodeInsertion(() => currentList.insertAtEnd(args[0]));
-                        updateExplanation(`Node with value "${args[0]}" successfully inserted at the end.`);
-                        break;
-                        
-                    case 'insertAtPosition':
-                        currentOperation.textContent = `Inserting at position ${args[1]}...`;
-                        updateExplanation(`Creating a new node with value "${args[0]}" and inserting it at position ${args[1]}.`);
-                        await animateNodeInsertion(() => currentList.insertAtPosition(args[0], args[1]), args[1]);
-                        updateExplanation(`Node with value "${args[0]}" successfully inserted at position ${args[1]}.`);
-                        break;
-                        
-                    case 'deleteNode':
-                        currentOperation.textContent = `Deleting node with value "${args[0]}"...`;
-                        updateExplanation(`Searching for node with value "${args[0]}" to delete.`);
-                        await animateNodeDeletion(() => currentList.deleteNode(args[0]), args[0]);
-                        updateExplanation(`Node with value "${args[0]}" successfully deleted.`);
-                        break;
-                        
-                    case 'reverseList':
-                        currentOperation.textContent = 'Reversing the linked list...';
-                        updateExplanation('Starting the process of reversing the linked list.');
-                        await animateReverse();
-                        updateExplanation('Linked list successfully reversed.');
-                        break;
-                        
-                    case 'fastSlowDemo':
-                        currentOperation.textContent = 'Demonstrating Fast-Slow Pointers...';
-                        updateExplanation('Using fast and slow pointers to find the middle of the list.');
-                        await animateFastSlow();
-                        updateExplanation('Fast-slow pointer demonstration completed.');
-                        break;
-                }
-                
-                currentOperation.textContent = 'Operation completed';
-                animationInProgress = false;
-                drawLinkedList();
-            }
-            
-            // Animation functions
-            async function animateNodeInsertion(insertFunction, position = 0) {
-                // Highlight the insertion point
-                if (position === 0) {
-                    // Insert at beginning - highlight head
-                    if (currentList.head) {
-                        highlightedNodes.add(currentList.head);
-                        drawLinkedList();
-                        await sleep(animationSpeed);
-                    }
-                } else if (position >= currentList.size) {
-                    // Insert at end - highlight tail
-                    if (currentList.tail) {
-                        highlightedNodes.add(currentList.tail);
-                        drawLinkedList();
-                        await sleep(animationSpeed);
-                    }
-                } else {
-                    // Insert at position - traverse to the position
-                    let current = currentList.head;
-                    let index = 0;
-                    
-                    while (index < position - 1) {
-                        highlightedNodes.add(current);
-                        drawLinkedList();
-                        await sleep(animationSpeed / 2);
-                        highlightedNodes.delete(current);
-                        current = current.next;
-                        index++;
-                    }
-                    
-                    highlightedNodes.add(current);
-                    drawLinkedList();
-                    await sleep(animationSpeed);
-                }
-                
-                // Perform the insertion
-                const newNode = insertFunction();
-                highlightedNodes.clear();
-                highlightedNodes.add(newNode);
-                drawLinkedList();
-                await sleep(animationSpeed);
-                
-                highlightedNodes.clear();
-            }
-            
-            async function animateNodeDeletion(deleteFunction, value) {
-                // Find the node to delete
-                let current = currentList.head;
-                let previous = null;
-                
-                while (current !== null && current.value !== value) {
-                    highlightedNodes.add(current);
-                    drawLinkedList();
-                    await sleep(animationSpeed / 2);
-                    highlightedNodes.delete(current);
-                    previous = current;
-                    current = current.next;
-                    
-                    // Prevent infinite loop in circular lists
-                    if (current === currentList.head) break;
-                }
-                
-                if (current && current.value === value) {
-                    highlightedNodes.add(current);
-                    drawLinkedList();
-                    await sleep(animationSpeed);
-                    
-                    // Highlight connections that will change
-                    if (previous) highlightedNodes.add(previous);
-                    if (current.next) highlightedNodes.add(current.next);
-                    drawLinkedList();
-                    await sleep(animationSpeed);
-                    
-                    // Perform deletion
-                    deleteFunction();
-                }
-                
-                highlightedNodes.clear();
-            }
-            
-            async function animateReverse() {
-                if (currentList.head === null || currentList.head.next === null) return;
-                
-                let previous = null;
-                let current = currentList.head;
-                let next = null;
-                
-                while (current !== null) {
-                    highlightedNodes.add(current);
-                    if (previous) highlightedNodes.add(previous);
-                    drawLinkedList();
-                    await sleep(animationSpeed);
-                    
-                    next = current.next;
-                    current.next = previous;
-                    
-                    if (currentList.type === 'doubly' || currentList.type === 'circular') {
-                        current.prev = next;
-                    }
-                    
-                    previous = current;
-                    current = next;
-                    
-                    highlightedNodes.clear();
-                    
-                    // For circular lists, we need to break when we complete the cycle
-                    if (currentList.type === 'circular' && current === currentList.head) break;
-                }
-                
-                currentList.head = previous;
-                
-                if (currentList.type === 'circular') {
-                    currentList.tail.next = currentList.head;
-                    if (currentList.type === 'doubly' || currentList.type === 'circular') {
-                        currentList.head.prev = currentList.tail;
-                    }
-                }
-            }
-            
-            async function animateFastSlow() {
-                if (currentList.head === null) return;
-                
-                let slow = currentList.head;
-                let fast = currentList.head;
-                
-                highlightedNodes.add(slow);
-                highlightedNodes.add(fast);
-                drawLinkedList();
-                await sleep(animationSpeed);
-                
-                while (fast !== null && fast.next !== null) {
-                    highlightedNodes.delete(slow);
-                    highlightedNodes.delete(fast);
-                    
-                    slow = slow.next;
-                    fast = fast.next.next;
-                    
-                    // Prevent infinite loop in circular lists
-                    if (fast === currentList.head || (fast && fast.next === currentList.head)) break;
-                    
-                    highlightedNodes.add(slow);
-                    highlightedNodes.add(fast);
-                    drawLinkedList();
-                    await sleep(animationSpeed);
-                }
-                
-                // Highlight the middle node (slow pointer)
-                highlightedNodes.clear();
-                highlightedNodes.add(slow);
-                drawLinkedList();
-                await sleep(animationSpeed * 2);
-                
-                highlightedNodes.clear();
-            }
-            
-            // Drawing functions
-            function drawLinkedList() {
-                // Clear canvas
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                if (currentList.head === null) {
-                    drawEmptyListMessage();
-                    return;
-                }
-                
-                const nodeRadius = 30;
-                const horizontalSpacing = 100;
-                const verticalSpacing = 80;
-                const startX = 50;
-                const startY = canvas.height / 2;
-                
-                let current = currentList.head;
-                let x = startX;
-                let y = startY;
-                let index = 0;
-                const visited = new Set();
-                
-                // Draw nodes and connections
-                while (current !== null && !visited.has(current)) {
-                    visited.add(current);
-                    
-                    // Draw connection to next node
-                    if (current.next) {
-                        drawConnection(
-                            x + nodeRadius, y,
-                            x + horizontalSpacing, y,
-                            current === currentList.head && currentList.type === 'circular'
-                        );
-                    }
-                    
-                    // Draw connection to previous node for doubly linked lists
-                    if ((currentList.type === 'doubly' || currentList.type === 'circular') && current.prev) {
-                        drawConnection(
-                            x - nodeRadius, y,
-                            x - horizontalSpacing, y,
-                            false,
-                            true
-                        );
-                    }
-                    
-                    // Draw the node
-                    drawNode(x, y, nodeRadius, current.value, highlightedNodes.has(current));
-                    
-                    // Move to next position
-                    x += horizontalSpacing;
-                    current = current.next;
-                    index++;
-                    
-                    // Handle circular list visualization
-                    if (currentList.type === 'circular' && current === currentList.head) {
-                        drawConnection(
-                            x - nodeRadius, y,
-                            startX - nodeRadius, startY,
-                            true
-                        );
-                        break;
-                    }
-                    
-                    // Prevent infinite loops
-                    if (index > 20) break;
-                }
-                
-                // Draw head and tail pointers
-                drawPointer(startX - 40, startY - 50, "Head", currentList.head);
-                if (currentList.tail) {
-                    drawPointer(x - horizontalSpacing - 40, startY + 50, "Tail", currentList.tail);
-                }
-            }
-            
-            function drawNode(x, y, radius, value, isHighlighted) {
-                // Node circle
-                ctx.beginPath();
-                ctx.arc(x, y, radius, 0, Math.PI * 2);
-                ctx.fillStyle = isHighlighted ? getComputedStyle(document.body).getPropertyValue('--node-highlight') : 
-                                              getComputedStyle(document.body).getPropertyValue('--node-color');
-                ctx.fill();
-                ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--text-primary');
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                
-                // Node value
-                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-primary');
-                ctx.font = '16px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(value, x, y);
-                
-                // For doubly linked lists, draw prev pointer area
-                if (currentList.type === 'doubly' || currentList.type === 'circular') {
-                    ctx.beginPath();
-                    ctx.moveTo(x - radius, y - radius);
-                    ctx.lineTo(x - radius, y + radius);
-                    ctx.lineTo(x - radius + 10, y);
-                    ctx.closePath();
-                    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--accent-light');
-                    ctx.fill();
-                }
-            }
-            
-            function drawConnection(fromX, fromY, toX, toY, isCircular = false, isPrev = false) {
-                ctx.beginPath();
-                ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--arrow-color');
-                ctx.lineWidth = 2;
-                
-                if (isCircular) {
-                    // Draw a curved connection for circular lists
-                    const midX = (fromX + toX) / 2;
-                    const midY = fromY - 60;
-                    
-                    ctx.moveTo(fromX, fromY);
-                    ctx.quadraticCurveTo(midX, midY, toX, toY);
-                } else {
-                    ctx.moveTo(fromX, fromY);
-                    ctx.lineTo(toX, toY);
-                }
-                
-                ctx.stroke();
-                
-                // Draw arrowhead
-                const angle = Math.atan2(toY - fromY, toX - fromX);
-                const arrowLength = 10;
-                
-                ctx.beginPath();
-                ctx.moveTo(toX, toY);
-                ctx.lineTo(
-                    toX - arrowLength * Math.cos(angle - Math.PI / 6),
-                    toY - arrowLength * Math.sin(angle - Math.PI / 6)
-                );
-                ctx.lineTo(
-                    toX - arrowLength * Math.cos(angle + Math.PI / 6),
-                    toY - arrowLength * Math.sin(angle + Math.PI / 6)
-                );
-                ctx.closePath();
-                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--arrow-color');
-                ctx.fill();
-                
-                // For prev pointers in doubly linked lists, draw a different style
-                if (isPrev) {
-                    ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--accent-light');
-                    ctx.setLineDash([5, 3]);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                }
-            }
-            
-            function drawPointer(x, y, label, node) {
-                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-secondary');
-                ctx.font = '14px Arial';
-                ctx.textAlign = 'left';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(label, x, y);
-                
-                // Draw line to node
-                ctx.beginPath();
-                ctx.moveTo(x + 30, y);
-                ctx.lineTo(x + 60, y);
-                ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--text-secondary');
-                ctx.lineWidth = 1;
-                ctx.stroke();
-            }
-            
-            function drawEmptyListMessage() {
-                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-secondary');
-                ctx.font = '20px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('The linked list is empty. Add some nodes to get started!', canvas.width / 2, canvas.height / 2);
-            }
-            
-            function updateExplanation(text) {
-                explanationContent.innerHTML = `<div class="step active">${text}</div>`;
-            }
-            
-            function sleep(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms));
-            }
-            
-            // Initialize with singly linked list selected
-            listTypeButtons[0].classList.add('active');
+
+            // Cancel button listeners
+            document.getElementById('cancelInsertHead').addEventListener('click', closeAllModals);
+            document.getElementById('cancelInsertTail').addEventListener('click', closeAllModals);
+            document.getElementById('cancelInsertAt').addEventListener('click', closeAllModals);
+            document.getElementById('cancelDeleteAt').addEventListener('click', closeAllModals);
+            document.getElementById('cancelSearch').addEventListener('click', closeAllModals);
+
+            // Confirm button listeners
+            document.getElementById('confirmInsertHead').addEventListener('click', insertHead);
+            document.getElementById('confirmInsertTail').addEventListener('click', insertTail);
+            document.getElementById('confirmInsertAt').addEventListener('click', insertAt);
+            document.getElementById('confirmDeleteAt').addEventListener('click', deleteAt);
+            document.getElementById('confirmSearch').addEventListener('click', searchValue);
         });
+
+        // Generate random linked list
+        function generateRandomList() {
+            const size = Math.floor(Math.random() * 5) + 3; // 3 to 7 nodes
+            linkedList = [];
+
+            for (let i = 0; i < size; i++) {
+                linkedList.push({
+                    value: Math.floor(Math.random() * 99) + 1,
+                    next: i < size - 1 ? i + 1 : null,
+                    prev: listType === 'doubly' && i > 0 ? i - 1 : null
+                });
+            }
+
+            // For circular list, connect last node to first
+            if (listType === 'circular' && linkedList.length > 0) {
+                linkedList[linkedList.length - 1].next = 0;
+                if (listType === 'doubly') {
+                    linkedList[0].prev = linkedList.length - 1;
+                }
+            }
+
+            updateListInfo();
+            renderLinkedList();
+            addToHistory(`Generated a new random ${getListTypeName()} with ${size} nodes.`, 'info');
+            operationStatus.textContent = 'List generated';
+            updateMotivationalMessage();
+            createConfetti();
+        }
+
+        // Reset list
+        function resetList() {
+            linkedList = [];
+            updateListInfo();
+            renderLinkedList();
+            addToHistory('List has been reset. It is now empty.', 'info');
+            operationStatus.textContent = 'List reset';
+            updateMotivationalMessage();
+        }
+
+        // Insert at head
+        function insertHead() {
+            const value = parseInt(document.getElementById('insertHeadValue').value);
+
+            if (isNaN(value) || value < 1 || value > 99) {
+                showError('insertHeadValueError');
+                return;
+            }
+
+            // Create new node
+            const newNode = {
+                value: value,
+                next: linkedList.length > 0 ? 0 : null,
+                prev: null
+            };
+
+            // Update existing nodes
+            for (let i = 0; i < linkedList.length; i++) {
+                if (linkedList[i].next !== null) linkedList[i].next++;
+                if (linkedList[i].prev !== null) linkedList[i].prev++;
+            }
+
+            // Insert at beginning
+            linkedList.unshift(newNode);
+
+            // For circular list, update last node's next pointer
+            if (listType === 'circular' && linkedList.length > 1) {
+                linkedList[linkedList.length - 1].next = 0;
+            }
+
+            // For doubly linked list, update second node's prev pointer
+            if (listType === 'doubly' && linkedList.length > 1) {
+                linkedList[1].prev = 0;
+            }
+
+            updateListInfo();
+            renderLinkedList();
+
+            // Highlight the inserted node
+            const nodes = linkedListContainer.querySelectorAll('.node');
+            if (nodes[0]) {
+                nodes[0].classList.add('inserted');
+                setTimeout(() => {
+                    nodes[0].classList.remove('inserted');
+                }, 1500);
+            }
+
+            addToHistory(`Inserted value ${value} at the head. The list now has ${linkedList.length} nodes.`, 'insert');
+            operationStatus.textContent = `Inserted ${value} at head`;
+
+            // Clear input and close modal
+            document.getElementById('insertHeadValue').value = '';
+            closeAllModals();
+            updateMotivationalMessage();
+        }
+
+        // Insert at tail
+        function insertTail() {
+            const value = parseInt(document.getElementById('insertTailValue').value);
+
+            if (isNaN(value) || value < 1 || value > 99) {
+                showError('insertTailValueError');
+                return;
+            }
+
+            // Create new node
+            const newNode = {
+                value: value,
+                next: listType === 'circular' && linkedList.length > 0 ? 0 : null,
+                prev: listType === 'doubly' && linkedList.length > 0 ? linkedList.length - 1 : null
+            };
+
+            // Update previous tail's next pointer
+            if (linkedList.length > 0) {
+                linkedList[linkedList.length - 1].next = linkedList.length;
+            }
+
+            // Insert at end
+            linkedList.push(newNode);
+
+            updateListInfo();
+            renderLinkedList();
+
+            // Highlight the inserted node
+            const nodes = linkedListContainer.querySelectorAll('.node');
+            if (nodes[linkedList.length - 1]) {
+                nodes[linkedList.length - 1].classList.add('inserted');
+                setTimeout(() => {
+                    nodes[linkedList.length - 1].classList.remove('inserted');
+                }, 1500);
+            }
+
+            addToHistory(`Inserted value ${value} at the tail. The list now has ${linkedList.length} nodes.`, 'insert');
+            operationStatus.textContent = `Inserted ${value} at tail`;
+
+            // Clear input and close modal
+            document.getElementById('insertTailValue').value = '';
+            closeAllModals();
+            updateMotivationalMessage();
+        }
+
+        // Insert at index
+        function insertAt() {
+            const value = parseInt(document.getElementById('insertAtValue').value);
+            const index = parseInt(document.getElementById('insertAtIndex').value);
+
+            if (isNaN(value) || value < 1 || value > 99) {
+                showError('insertAtValueError');
+                return;
+            }
+
+            if (isNaN(index) || index < 0 || index > linkedList.length) {
+                showError('insertAtIndexError');
+                return;
+            }
+
+            // Handle edge cases
+            if (index === 0) {
+                insertHead();
+                return;
+            } else if (index === linkedList.length) {
+                insertTail();
+                return;
+            }
+
+            // Create new node
+            const newNode = {
+                value: value,
+                next: index,
+                prev: listType === 'doubly' ? index - 1 : null
+            };
+
+            // Update existing nodes
+            for (let i = 0; i < linkedList.length; i++) {
+                if (linkedList[i].next !== null && linkedList[i].next >= index) linkedList[i].next++;
+                if (linkedList[i].prev !== null && linkedList[i].prev >= index) linkedList[i].prev++;
+            }
+
+            // Update the node before the insertion point
+            linkedList[index - 1].next = index;
+
+            // Insert at position
+            linkedList.splice(index, 0, newNode);
+
+            // For doubly linked list, update the node after the insertion point
+            if (listType === 'doubly' && index < linkedList.length - 1) {
+                linkedList[index + 1].prev = index;
+            }
+
+            updateListInfo();
+            renderLinkedList();
+
+            // Highlight the inserted node
+            const nodes = linkedListContainer.querySelectorAll('.node');
+            if (nodes[index]) {
+                nodes[index].classList.add('inserted');
+                setTimeout(() => {
+                    nodes[index].classList.remove('inserted');
+                }, 1500);
+            }
+
+            addToHistory(`Inserted value ${value} at index ${index}. The list now has ${linkedList.length} nodes.`, 'insert');
+            operationStatus.textContent = `Inserted ${value} at index ${index}`;
+
+            // Clear inputs and close modal
+            document.getElementById('insertAtValue').value = '';
+            document.getElementById('insertAtIndex').value = '';
+            closeAllModals();
+            updateMotivationalMessage();
+        }
+
+        // Delete head
+        function deleteHead() {
+            if (linkedList.length === 0) {
+                addToHistory('List is empty. Nothing to delete.', 'info');
+                operationStatus.textContent = 'List is empty';
+                return;
+            }
+
+            const deletedValue = linkedList[0].value;
+
+            // Highlight the node to be deleted
+            const nodes = linkedListContainer.querySelectorAll('.node');
+            if (nodes[0]) {
+                nodes[0].classList.add('deleted');
+
+                // Remove the node after animation
+                setTimeout(() => {
+                    // Update existing nodes
+                    for (let i = 0; i < linkedList.length; i++) {
+                        if (linkedList[i].next !== null) linkedList[i].next--;
+                        if (linkedList[i].prev !== null) linkedList[i].prev--;
+                    }
+
+                    // Remove first node
+                    linkedList.shift();
+
+                    // For circular list, update last node's next pointer
+                    if (listType === 'circular' && linkedList.length > 0) {
+                        linkedList[linkedList.length - 1].next = 0;
+                    }
+
+                    updateListInfo();
+                    renderLinkedList();
+                }, 500);
+            }
+
+            addToHistory(`Deleted value ${deletedValue} from the head. The list now has ${linkedList.length - 1} nodes.`, 'delete');
+            operationStatus.textContent = `Deleted ${deletedValue} from head`;
+            updateMotivationalMessage();
+        }
+
+        // Delete tail
+        function deleteTail() {
+            if (linkedList.length === 0) {
+                addToHistory('List is empty. Nothing to delete.', 'info');
+                operationStatus.textContent = 'List is empty';
+                return;
+            }
+
+            const deletedValue = linkedList[linkedList.length - 1].value;
+
+            // Highlight the node to be deleted
+            const nodes = linkedListContainer.querySelectorAll('.node');
+            if (nodes[linkedList.length - 1]) {
+                nodes[linkedList.length - 1].classList.add('deleted');
+
+                // Remove the node after animation
+                setTimeout(() => {
+                    // Remove last node
+                    linkedList.pop();
+
+                    // Update the new tail's next pointer
+                    if (linkedList.length > 0) {
+                        linkedList[linkedList.length - 1].next = listType === 'circular' ? 0 : null;
+                    }
+
+                    updateListInfo();
+                    renderLinkedList();
+                }, 500);
+            }
+
+            addToHistory(`Deleted value ${deletedValue} from the tail. The list now has ${linkedList.length - 1} nodes.`, 'delete');
+            operationStatus.textContent = `Deleted ${deletedValue} from tail`;
+            updateMotivationalMessage();
+        }
+
+        // Delete at index
+        function deleteAt() {
+            const index = parseInt(document.getElementById('deleteAtIndex').value);
+
+            if (linkedList.length === 0) {
+                addToHistory('List is empty. Nothing to delete.', 'info');
+                operationStatus.textContent = 'List is empty';
+                closeAllModals();
+                return;
+            }
+
+            if (isNaN(index) || index < 0 || index >= linkedList.length) {
+                showError('deleteAtIndexError');
+                return;
+            }
+
+            // Handle edge cases
+            if (index === 0) {
+                deleteHead();
+                closeAllModals();
+                return;
+            } else if (index === linkedList.length - 1) {
+                deleteTail();
+                closeAllModals();
+                return;
+            }
+
+            const deletedValue = linkedList[index].value;
+
+            // Highlight the node to be deleted
+            const nodes = linkedListContainer.querySelectorAll('.node');
+            if (nodes[index]) {
+                nodes[index].classList.add('deleted');
+
+                // Remove the node after animation
+                setTimeout(() => {
+                    // Update existing nodes
+                    for (let i = 0; i < linkedList.length; i++) {
+                        if (linkedList[i].next !== null && linkedList[i].next > index) linkedList[i].next--;
+                        if (linkedList[i].prev !== null && linkedList[i].prev > index) linkedList[i].prev--;
+                    }
+
+                    // Update the node before the deletion point
+                    linkedList[index - 1].next = index;
+
+                    // Remove the node
+                    linkedList.splice(index, 1);
+
+                    updateListInfo();
+                    renderLinkedList();
+                }, 500);
+            }
+
+            addToHistory(`Deleted value ${deletedValue} from index ${index}. The list now has ${linkedList.length - 1} nodes.`, 'delete');
+            operationStatus.textContent = `Deleted ${deletedValue} from index ${index}`;
+
+            // Clear input and close modal
+            document.getElementById('deleteAtIndex').value = '';
+            closeAllModals();
+            updateMotivationalMessage();
+        }
+
+        // Search value
+        function searchValue() {
+            const value = parseInt(document.getElementById('searchValue').value);
+
+            if (isNaN(value) || value < 1 || value > 99) {
+                showError('searchValueError');
+                return;
+            }
+
+            if (linkedList.length === 0) {
+                addToHistory('List is empty. Nothing to search.', 'info');
+                operationStatus.textContent = 'List is empty';
+                closeAllModals();
+                return;
+            }
+
+            addToHistory(`Searching for value ${value} in the list...`, 'search');
+            operationStatus.textContent = `Searching for ${value}`;
+
+            // Sequential search with highlighting
+            const nodes = linkedListContainer.querySelectorAll('.node');
+            let found = false;
+            let i = 0;
+
+            function searchStep() {
+                if (i < linkedList.length) {
+                    // Remove previous highlights
+                    nodes.forEach(node => {
+                        node.classList.remove('searching', 'found');
+                    });
+
+                    // Highlight current node
+                    nodes[i].classList.add('searching');
+
+                    addToHistory(`Checking node at position ${i}: value is ${linkedList[i].value}. ${linkedList[i].value === value ? 'Match found!' : 'Not a match, continuing search...'}`, 'search');
+
+                    if (linkedList[i].value === value) {
+                        nodes[i].classList.remove('searching');
+                        nodes[i].classList.add('found');
+                        addToHistory(`Value ${value} found at position ${i}! Search completed.`, 'search');
+                        operationStatus.textContent = `Found ${value} at position ${i}`;
+                        found = true;
+                        closeAllModals();
+                        createConfetti();
+                        return;
+                    }
+
+                    i++;
+                    setTimeout(searchStep, animationSpeed);
+                } else {
+                    // Value not found
+                    if (!found) {
+                        addToHistory(`Value ${value} not found in the list. Search completed.`, 'search');
+                        operationStatus.textContent = `${value} not found`;
+                        closeAllModals();
+                    }
+                }
+            }
+
+            searchStep();
+
+            // Clear input
+            document.getElementById('searchValue').value = '';
+            updateMotivationalMessage();
+        }
+
+        // Reverse list
+        function reverseList() {
+            if (linkedList.length <= 1) {
+                addToHistory('List has 0 or 1 nodes. No need to reverse.', 'info');
+                operationStatus.textContent = 'List unchanged';
+                return;
+            }
+
+            // Reverse the array
+            linkedList.reverse();
+
+            // Update pointers
+            for (let i = 0; i < linkedList.length; i++) {
+                if (i < linkedList.length - 1) {
+                    linkedList[i].next = i + 1;
+                } else {
+                    linkedList[i].next = listType === 'circular' ? 0 : null;
+                }
+
+                if (listType === 'doubly') {
+                    if (i > 0) {
+                        linkedList[i].prev = i - 1;
+                    } else {
+                        linkedList[i].prev = listType === 'circular' ? linkedList.length - 1 : null;
+                    }
+                }
+            }
+
+            updateListInfo();
+            renderLinkedList();
+            addToHistory('List has been reversed.', 'update');
+            operationStatus.textContent = 'List reversed';
+            updateMotivationalMessage();
+            createConfetti();
+        }
+
+        // Clear list
+        function clearList() {
+            linkedList = [];
+            updateListInfo();
+            renderLinkedList();
+            addToHistory('List has been cleared. It is now empty.', 'info');
+            operationStatus.textContent = 'List cleared';
+            updateMotivationalMessage();
+        }
+
+        // Update animation speed
+        function updateSpeed() {
+            const speed = parseInt(animationSpeedSlider.value);
+
+            switch (speed) {
+                case 1:
+                    animationSpeed = 1000;
+                    speedValue.textContent = 'Very Slow';
+                    break;
+                case 2:
+                    animationSpeed = 750;
+                    speedValue.textContent = 'Slow';
+                    break;
+                case 3:
+                    animationSpeed = 500;
+                    speedValue.textContent = 'Medium';
+                    break;
+                case 4:
+                    animationSpeed = 250;
+                    speedValue.textContent = 'Fast';
+                    break;
+                case 5:
+                    animationSpeed = 100;
+                    speedValue.textContent = 'Very Fast';
+                    break;
+            }
+        }
+
+        // Render linked list visualization
+        function renderLinkedList() {
+            linkedListContainer.innerHTML = '';
+            listLengthDisplay.textContent = linkedList.length;
+
+            if (linkedList.length === 0) {
+                linkedListContainer.innerHTML = `
+                    <div class="empty-state">
+                        <p>Your linked list is empty. Add some nodes to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            linkedList.forEach((node, index) => {
+                const nodeElement = document.createElement('div');
+                nodeElement.className = 'node';
+
+                const valueElement = document.createElement('div');
+                valueElement.className = 'node-value';
+                valueElement.textContent = node.value;
+
+                nodeElement.appendChild(valueElement);
+
+                // Add pointers based on list type
+                if (listType === 'singly') {
+                    if (node.next !== null) {
+                        const pointer = document.createElement('div');
+                        pointer.className = 'node-pointer';
+                        nodeElement.appendChild(pointer);
+                    } else {
+                        const nullElement = document.createElement('div');
+                        nullElement.className = 'null-node';
+                        nullElement.textContent = 'NULL';
+                        nodeElement.appendChild(nullElement);
+                    }
+                } else if (listType === 'doubly') {
+                    if (index === 0) {
+                        // First node
+                        const nullElement = document.createElement('div');
+                        nullElement.className = 'null-node';
+                        nullElement.textContent = 'NULL';
+                        nodeElement.insertBefore(nullElement, valueElement);
+                        
+                        if (node.next !== null) {
+                            const pointer = document.createElement('div');
+                            pointer.className = 'doubly-pointer';
+                            nodeElement.appendChild(pointer);
+                        } else {
+                            const nullElement = document.createElement('div');
+                            nullElement.className = 'null-node';
+                            nullElement.textContent = 'NULL';
+                            nodeElement.appendChild(nullElement);
+                        }
+                    } else if (index === linkedList.length - 1) {
+                        // Last node
+                        if (node.prev !== null) {
+                            const pointer = document.createElement('div');
+                            pointer.className = 'doubly-pointer';
+                            nodeElement.insertBefore(pointer, valueElement);
+                        }
+                        
+                        const nullElement = document.createElement('div');
+                        nullElement.className = 'null-node';
+                        nullElement.textContent = 'NULL';
+                        nodeElement.appendChild(nullElement);
+                    } else {
+                        // Middle node
+                        const pointerLeft = document.createElement('div');
+                        pointerLeft.className = 'doubly-pointer';
+                        nodeElement.insertBefore(pointerLeft, valueElement);
+                        
+                        const pointerRight = document.createElement('div');
+                        pointerRight.className = 'doubly-pointer';
+                        nodeElement.appendChild(pointerRight);
+                    }
+                } else if (listType === 'circular') {
+                    const pointer = document.createElement('div');
+                    pointer.className = 'node-pointer';
+                    nodeElement.appendChild(pointer);
+                    
+                    // Add circular connector for the last node
+                    if (index === linkedList.length - 1) {
+                        const connector = document.createElement('div');
+                        connector.className = 'circular-connector';
+                        nodeElement.appendChild(connector);
+                    }
+                }
+
+                linkedListContainer.appendChild(nodeElement);
+            });
+        }
+
+        // Update list information
+        function updateListInfo() {
+            currentListType.textContent = getListTypeName();
+            headValue.textContent = linkedList.length > 0 ? linkedList[0].value : 'None';
+            tailValue.textContent = linkedList.length > 0 ? linkedList[linkedList.length - 1].value : 'None';
+            listLength.textContent = linkedList.length;
+        }
+
+        // Get list type name
+        function getListTypeName() {
+            switch (listType) {
+                case 'singly': return 'Singly Linked List';
+                case 'doubly': return 'Doubly Linked List';
+                case 'circular': return 'Circular Linked List';
+                default: return 'Linked List';
+            }
+        }
+
+        // Add to operation history
+        function addToHistory(text, type) {
+            const step = document.createElement('div');
+            step.className = `step ${type}`;
+            step.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${text}`;
+
+            explanationContent.insertBefore(step, explanationContent.firstChild);
+
+            // Limit history to 20 items
+            if (explanationContent.children.length > 20) {
+                explanationContent.removeChild(explanationContent.lastChild);
+            }
+
+            operationHistory.unshift({ text, type, time: new Date() });
+        }
+
+        // Clear operation history
+        function clearOperationHistory() {
+            explanationContent.innerHTML = '<div class="step">Operation history cleared</div>';
+            operationHistory = [];
+        }
+
+        // Toggle theme
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+
+            if (document.body.classList.contains('dark-theme')) {
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i> <span>Light Mode</span>';
+                document.body.style.background = 'linear-gradient(135deg, #0f172a, #1e293b, #334155)';
+            } else {
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i> <span>Dark Mode</span>';
+                document.body.style.background = 'linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d)';
+            }
+        }
+
+        // Update motivational message
+        function updateMotivationalMessage() {
+            const randomIndex = Math.floor(Math.random() * motivationalMessages.length);
+            motivationalMessage.textContent = motivationalMessages[randomIndex];
+        }
+
+        // Create confetti animation
+        function createConfetti() {
+            celebration.style.display = 'block';
+            celebration.innerHTML = '';
+            
+            const colors = ['#ff9a9e', '#fad0c4', '#a1c4fd', '#c2e9fb', '#ffecd2', '#fcb69f'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animation = `fall ${Math.random() * 3 + 2}s linear forwards`;
+                confetti.style.opacity = '1';
+                
+                celebration.appendChild(confetti);
+            }
+            
+            // Hide confetti after animation
+            setTimeout(() => {
+                celebration.style.display = 'none';
+            }, 3000);
+        }
+
+        // Add fall animation for confetti
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fall {
+                0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+                100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Modal functions
+        function openModal(operation) {
+            closeAllModals();
+
+            // Reset error messages
+            document.querySelectorAll('.error-message').forEach(error => {
+                error.style.display = 'none';
+            });
+
+            switch (operation) {
+                case 'insertHead':
+                    insertHeadModal.style.display = 'flex';
+                    break;
+                case 'insertTail':
+                    insertTailModal.style.display = 'flex';
+                    break;
+                case 'insertAt':
+                    insertAtModal.style.display = 'flex';
+                    break;
+                case 'deleteAt':
+                    deleteAtModal.style.display = 'flex';
+                    break;
+                case 'search':
+                    searchModal.style.display = 'flex';
+                    break;
+            }
+        }
+
+        function closeAllModals() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.style.display = 'none';
+            });
+        }
+
+        // Error handling functions
+        function showError(errorId) {
+            document.getElementById(errorId).style.display = 'block';
+        }
     </script>
 </body>
 </html>
