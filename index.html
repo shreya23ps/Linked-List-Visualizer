@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linked List Visualizer</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --text-primary: #e6e6e6;
+            --text-secondary: #b3b3b3;
+            --accent: #0f4c75;
+            --accent-light: #3282b8;
+            --node-color: #0f4c75;
+            --node-highlight: #3282b8;
+            --arrow-color: #bbbbbb;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+        }
+
+        .light-mode {
+            --bg-primary: #f5f5f5;
+            --bg-secondary: #ffffff;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --accent: #2196f3;
+            --accent-light: #64b5f6;
+            --node-color: #2196f3;
+            --node-highlight: #64b5f6;
+            --arrow-color: #666666;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--accent);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .mode-toggle {
+            background: var(--accent);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+        }
+
+        .mode-toggle:hover {
+            background: var(--accent-light);
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .controls {
+            background-color: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-group h3 {
+            margin-bottom: 10px;
+            color: var(--accent-light);
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-light);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+        }
+
+        input, select {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--accent);
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-light);
+        }
+
+        .visualization-area {
+            background-color: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-height: 400px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .explanation {
+            background-color: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .explanation h3 {
+            margin-bottom: 15px;
+            color: var(--accent-light);
+        }
+
+        .step {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-left: 3px solid var(--accent);
+            background-color: rgba(15, 76, 117, 0.1);
+        }
+
+        .step.active {
+            background-color: rgba(15, 76, 117, 0.3);
+            border-left-color: var(--accent-light);
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .speed-slider {
+            flex: 1;
+        }
+
+        .current-operation {
+            font-weight: bold;
+            color: var(--accent-light);
+            margin-bottom: 10px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Linked List Visualizer</h1>
+            <button class="mode-toggle" id="modeToggle">
+                <span>Light Mode</span>
+            </button>
+        </header>
+        
+        <div class="main-content">
+            <div class="controls">
+                <div class="control-group">
+                    <h3>Linked List Type</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-primary list-type" data-type="singly">Singly Linked List</button>
+                        <button class="btn btn-primary list-type" data-type="doubly">Doubly Linked List</button>
+                        <button class="btn btn-primary list-type" data-type="circular">Circular Linked List</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Operations</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-success" id="insertAtBeginning">Insert at Beginning</button>
+                        <button class="btn btn-success" id="insertAtEnd">Insert at End</button>
+                        <button class="btn btn-success" id="insertAtPosition">Insert at Position</button>
+                        <button class="btn btn-warning" id="deleteNode">Delete Node</button>
+                        <button class="btn btn-danger" id="reverseList">Reverse List</button>
+                        <button class="btn btn-primary" id="fastSlowDemo">Fast-Slow Pointer Demo</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Node Value</h3>
+                    <input type="text" id="nodeValue" placeholder="Enter node value" maxlength="10">
+                </div>
+                
+                <div class="control-group">
+                    <h3>Position/Value for Operation</h3>
+                    <input type="text" id="operationValue" placeholder="Enter position or value">
+                </div>
+                
+                <div class="control-group">
+                    <h3>Animation Speed</h3>
+                    <div class="speed-control">
+                        <span>Slow</span>
+                        <input type="range" id="speedSlider" class="speed-slider" min="1" max="10" value="5">
+                        <span>Fast</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="visualization-area">
+                <div class="current-operation" id="currentOperation">No operation in progress</div>
+                <canvas id="linkedListCanvas"></canvas>
+            </div>
+            
+            <div class="explanation">
+                <h3>Step-by-Step Explanation</h3>
+                <div id="explanationContent">
+                    <div class="step">Select a linked list type and operation to begin visualization.</div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Linked List Visualizer - Created for IT students and non-tech backgrounds</p>
+        </footer>
+    </div>
+
+    <script>
+        // Linked List Visualization Implementation
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const canvas = document.getElementById('linkedListCanvas');
+            const ctx = canvas.getContext('2d');
+            const modeToggle = document.getElementById('modeToggle');
+            const listTypeButtons = document.querySelectorAll('.list-type');
+            const operationButtons = {
+                insertAtBeginning: document.getElementById('insertAtBeginning'),
+                insertAtEnd: document.getElementById('insertAtEnd'),
+                insertAtPosition: document.getElementById('insertAtPosition'),
+                deleteNode: document.getElementById('deleteNode'),
+                reverseList: document.getElementById('reverseList'),
+                fastSlowDemo: document.getElementById('fastSlowDemo')
+            };
+            const nodeValueInput = document.getElementById('nodeValue');
+            const operationValueInput = document.getElementById('operationValue');
+            const speedSlider = document.getElementById('speedSlider');
+            const currentOperation = document.getElementById('currentOperation');
+            const explanationContent = document.getElementById('explanationContent');
+            
+            // Canvas setup
+            function resizeCanvas() {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                drawLinkedList();
+            }
+            
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            
+            // Theme management
+            modeToggle.addEventListener('click', function() {
+                document.body.classList.toggle('light-mode');
+                modeToggle.querySelector('span').textContent = 
+                    document.body.classList.contains('light-mode') ? 'Dark Mode' : 'Light Mode';
+                drawLinkedList();
+            });
+            
+            // Linked List Implementation
+            class Node {
+                constructor(value) {
+                    this.value = value;
+                    this.next = null;
+                    this.prev = null;
+                }
+            }
+            
+            class LinkedList {
+                constructor(type = 'singly') {
+                    this.head = null;
+                    this.tail = null;
+                    this.type = type;
+                    this.size = 0;
+                }
+                
+                // Insert at beginning
+                insertAtBeginning(value) {
+                    const newNode = new Node(value);
+                    
+                    if (this.head === null) {
+                        this.head = newNode;
+                        this.tail = newNode;
+                        if (this.type === 'circular') {
+                            newNode.next = newNode;
+                            if (this.type === 'doubly' || this.type === 'circular') {
+                                newNode.prev = newNode;
+                            }
+                        }
+                    } else {
+                        newNode.next = this.head;
+                        if (this.type === 'doubly' || this.type === 'circular') {
+                            this.head.prev = newNode;
+                        }
+                        this.head = newNode;
+                        
+                        if (this.type === 'circular') {
+                            this.tail.next = this.head;
+                            if (this.type === 'doubly' || this.type === 'circular') {
+                                this.head.prev = this.tail;
+                            }
+                        }
+                    }
+                    
+                    this.size++;
+                    return newNode;
+                }
+                
+                // Insert at end
+                insertAtEnd(value) {
+                    const newNode = new Node(value);
+                    
+                    if (this.head === null) {
+                        return this.insertAtBeginning(value);
+                    } else {
+                        this.tail.next = newNode;
+                        if (this.type === 'doubly' || this.type === 'circular') {
+                            newNode.prev = this.tail;
+                        }
+                        this.tail = newNode;
+                        
+                        if (this.type === 'circular') {
+                            this.tail.next = this.head;
+                            if (this.type === 'doubly' || this.type === 'circular') {
+                                this.head.prev = this.tail;
+                            }
+                        }
+                    }
+                    
+                    this.size++;
+                    return newNode;
+                }
+                
+                // Insert at position
+                insertAtPosition(value, position) {
+                    if (position <= 0) {
+                        return this.insertAtBeginning(value);
+                    } else if (position >= this.size) {
+                        return this.insertAtEnd(value);
+                    } else {
+                        const newNode = new Node(value);
+                        let current = this.head;
+                        let index = 0;
+                        
+                        while (index < position - 1) {
+                            current = current.next;
+                            index++;
+                        }
+                        
+                        newNode.next = current.next;
+                        if (this.type === 'doubly' || this.type === 'circular') {
+                            newNode.prev = current;
+                            if (newNode.next) {
+                                newNode.next.prev = newNode;
+                            }
+                        }
+                        current.next = newNode;
+                        
+                        this.size++;
+                        return newNode;
+                    }
+                }
+                
+                // Delete node by value
+                deleteNode(value) {
+                    if (this.head === null) return null;
+                    
+                    let current = this.head;
+                    let previous = null;
+                    
+                    // If head needs to be deleted
+                    if (current.value === value) {
+                        this.head = current.next;
+                        
+                        if (this.type === 'doubly' || this.type === 'circular') {
+                            if (this.head) {
+                                this.head.prev = null;
+                            }
+                        }
+                        
+                        if (this.type === 'circular') {
+                            if (this.head === null) {
+                                this.tail = null;
+                            } else {
+                                this.tail.next = this.head;
+                                if (this.type === 'doubly' || this.type === 'circular') {
+                                    this.head.prev = this.tail;
+                                }
+                            }
+                        }
+                        
+                        this.size--;
+                        return current;
+                    }
+                    
+                    // Traverse to find the node
+                    while (current !== null && current.value !== value) {
+                        previous = current;
+                        current = current.next;
+                        
+                        // Prevent infinite loop in circular lists
+                        if (current === this.head) break;
+                    }
+                    
+                    if (current === null || current.value !== value) return null;
+                    
+                    // Node found, delete it
+                    previous.next = current.next;
+                    
+                    if (this.type === 'doubly' || this.type === 'circular') {
+                        if (current.next) {
+                            current.next.prev = previous;
+                        }
+                    }
+                    
+                    if (current === this.tail) {
+                        this.tail = previous;
+                    }
+                    
+                    if (this.type === 'circular' && this.tail) {
+                        this.tail.next = this.head;
+                        if (this.type === 'doubly' || this.type === 'circular') {
+                            this.head.prev = this.tail;
+                        }
+                    }
+                    
+                    this.size--;
+                    return current;
+                }
+                
+                // Reverse the linked list
+                reverse() {
+                    if (this.head === null || this.head.next === null) return;
+                    
+                    let previous = null;
+                    let current = this.head;
+                    let next = null;
+                    
+                    this.tail = this.head;
+                    
+                    while (current !== null) {
+                        next = current.next;
+                        current.next = previous;
+                        
+                        if (this.type === 'doubly' || this.type === 'circular') {
+                            current.prev = next;
+                        }
+                        
+                        previous = current;
+                        current = next;
+                        
+                        // For circular lists, we need to break when we complete the cycle
+                        if (this.type === 'circular' && current === this.head) break;
+                    }
+                    
+                    this.head = previous;
+                    
+                    if (this.type === 'circular') {
+                        this.tail.next = this.head;
+                        if (this.type === 'doubly' || this.type === 'circular') {
+                            this.head.prev = this.tail;
+                        }
+                    }
+                }
+            }
+            
+            // Visualization state
+            let currentList = new LinkedList('singly');
+            let animationSpeed = 500;
+            let highlightedNodes = new Set();
+            let animationInProgress = false;
+            
+            // Update animation speed based on slider
+            speedSlider.addEventListener('input', function() {
+                animationSpeed = 1100 - (this.value * 100);
+            });
+            
+            // List type selection
+            listTypeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (animationInProgress) return;
+                    
+                    listTypeButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    currentList = new LinkedList(this.dataset.type);
+                    updateExplanation('Created a new ' + getListTypeName(this.dataset.type) + '.');
+                    drawLinkedList();
+                });
+            });
+            
+            // Helper function to get list type name
+            function getListTypeName(type) {
+                switch(type) {
+                    case 'singly': return 'Singly Linked List';
+                    case 'doubly': return 'Doubly Linked List';
+                    case 'circular': return 'Circular Linked List';
+                    default: return 'Linked List';
+                }
+            }
+            
+            // Operation handlers
+            operationButtons.insertAtBeginning.addEventListener('click', function() {
+                if (animationInProgress) return;
+                
+                const value = nodeValueInput.value.trim();
+                if (!value) {
+                    updateExplanation('Please enter a value for the new node.');
+                    return;
+                }
+                
+                performOperation('insertAtBeginning', value);
+            });
+            
+            operationButtons.insertAtEnd.addEventListener('click', function() {
+                if (animationInProgress) return;
+                
+                const value = nodeValueInput.value.trim();
+                if (!value) {
+                    updateExplanation('Please enter a value for the new node.');
+                    return;
+                }
+                
+                performOperation('insertAtEnd', value);
+            });
+            
+            operationButtons.insertAtPosition.addEventListener('click', function() {
+                if (animationInProgress) return;
+                
+                const value = nodeValueInput.value.trim();
+                const position = parseInt(operationValueInput.value);
+                
+                if (!value) {
+                    updateExplanation('Please enter a value for the new node.');
+                    return;
+                }
+                
+                if (isNaN(position)) {
+                    updateExplanation('Please enter a valid position.');
+                    return;
+                }
+                
+                performOperation('insertAtPosition', value, position);
+            });
+            
+            operationButtons.deleteNode.addEventListener('click', function() {
+                if (animationInProgress) return;
+                
+                const value = operationValueInput.value.trim();
+                if (!value) {
+                    updateExplanation('Please enter a value to delete.');
+                    return;
+                }
+                
+                performOperation('deleteNode', value);
+            });
+            
+            operationButtons.reverseList.addEventListener('click', function() {
+                if (animationInProgress) return;
+                
+                performOperation('reverseList');
+            });
+            
+            operationButtons.fastSlowDemo.addEventListener('click', function() {
+                if (animationInProgress) return;
+                
+                performOperation('fastSlowDemo');
+            });
+            
+            // Perform operation with animation
+            async function performOperation(operation, ...args) {
+                if (animationInProgress) return;
+                
+                animationInProgress = true;
+                highlightedNodes.clear();
+                
+                switch(operation) {
+                    case 'insertAtBeginning':
+                        currentOperation.textContent = 'Inserting at beginning...';
+                        updateExplanation(`Creating a new node with value "${args[0]}" and inserting it at the beginning of the list.`);
+                        await animateNodeInsertion(() => currentList.insertAtBeginning(args[0]));
+                        updateExplanation(`Node with value "${args[0]}" successfully inserted at the beginning.`);
+                        break;
+                        
+                    case 'insertAtEnd':
+                        currentOperation.textContent = 'Inserting at end...';
+                        updateExplanation(`Creating a new node with value "${args[0]}" and inserting it at the end of the list.`);
+                        await animateNodeInsertion(() => currentList.insertAtEnd(args[0]));
+                        updateExplanation(`Node with value "${args[0]}" successfully inserted at the end.`);
+                        break;
+                        
+                    case 'insertAtPosition':
+                        currentOperation.textContent = `Inserting at position ${args[1]}...`;
+                        updateExplanation(`Creating a new node with value "${args[0]}" and inserting it at position ${args[1]}.`);
+                        await animateNodeInsertion(() => currentList.insertAtPosition(args[0], args[1]), args[1]);
+                        updateExplanation(`Node with value "${args[0]}" successfully inserted at position ${args[1]}.`);
+                        break;
+                        
+                    case 'deleteNode':
+                        currentOperation.textContent = `Deleting node with value "${args[0]}"...`;
+                        updateExplanation(`Searching for node with value "${args[0]}" to delete.`);
+                        await animateNodeDeletion(() => currentList.deleteNode(args[0]), args[0]);
+                        updateExplanation(`Node with value "${args[0]}" successfully deleted.`);
+                        break;
+                        
+                    case 'reverseList':
+                        currentOperation.textContent = 'Reversing the linked list...';
+                        updateExplanation('Starting the process of reversing the linked list.');
+                        await animateReverse();
+                        updateExplanation('Linked list successfully reversed.');
+                        break;
+                        
+                    case 'fastSlowDemo':
+                        currentOperation.textContent = 'Demonstrating Fast-Slow Pointers...';
+                        updateExplanation('Using fast and slow pointers to find the middle of the list.');
+                        await animateFastSlow();
+                        updateExplanation('Fast-slow pointer demonstration completed.');
+                        break;
+                }
+                
+                currentOperation.textContent = 'Operation completed';
+                animationInProgress = false;
+                drawLinkedList();
+            }
+            
+            // Animation functions
+            async function animateNodeInsertion(insertFunction, position = 0) {
+                // Highlight the insertion point
+                if (position === 0) {
+                    // Insert at beginning - highlight head
+                    if (currentList.head) {
+                        highlightedNodes.add(currentList.head);
+                        drawLinkedList();
+                        await sleep(animationSpeed);
+                    }
+                } else if (position >= currentList.size) {
+                    // Insert at end - highlight tail
+                    if (currentList.tail) {
+                        highlightedNodes.add(currentList.tail);
+                        drawLinkedList();
+                        await sleep(animationSpeed);
+                    }
+                } else {
+                    // Insert at position - traverse to the position
+                    let current = currentList.head;
+                    let index = 0;
+                    
+                    while (index < position - 1) {
+                        highlightedNodes.add(current);
+                        drawLinkedList();
+                        await sleep(animationSpeed / 2);
+                        highlightedNodes.delete(current);
+                        current = current.next;
+                        index++;
+                    }
+                    
+                    highlightedNodes.add(current);
+                    drawLinkedList();
+                    await sleep(animationSpeed);
+                }
+                
+                // Perform the insertion
+                const newNode = insertFunction();
+                highlightedNodes.clear();
+                highlightedNodes.add(newNode);
+                drawLinkedList();
+                await sleep(animationSpeed);
+                
+                highlightedNodes.clear();
+            }
+            
+            async function animateNodeDeletion(deleteFunction, value) {
+                // Find the node to delete
+                let current = currentList.head;
+                let previous = null;
+                
+                while (current !== null && current.value !== value) {
+                    highlightedNodes.add(current);
+                    drawLinkedList();
+                    await sleep(animationSpeed / 2);
+                    highlightedNodes.delete(current);
+                    previous = current;
+                    current = current.next;
+                    
+                    // Prevent infinite loop in circular lists
+                    if (current === currentList.head) break;
+                }
+                
+                if (current && current.value === value) {
+                    highlightedNodes.add(current);
+                    drawLinkedList();
+                    await sleep(animationSpeed);
+                    
+                    // Highlight connections that will change
+                    if (previous) highlightedNodes.add(previous);
+                    if (current.next) highlightedNodes.add(current.next);
+                    drawLinkedList();
+                    await sleep(animationSpeed);
+                    
+                    // Perform deletion
+                    deleteFunction();
+                }
+                
+                highlightedNodes.clear();
+            }
+            
+            async function animateReverse() {
+                if (currentList.head === null || currentList.head.next === null) return;
+                
+                let previous = null;
+                let current = currentList.head;
+                let next = null;
+                
+                while (current !== null) {
+                    highlightedNodes.add(current);
+                    if (previous) highlightedNodes.add(previous);
+                    drawLinkedList();
+                    await sleep(animationSpeed);
+                    
+                    next = current.next;
+                    current.next = previous;
+                    
+                    if (currentList.type === 'doubly' || currentList.type === 'circular') {
+                        current.prev = next;
+                    }
+                    
+                    previous = current;
+                    current = next;
+                    
+                    highlightedNodes.clear();
+                    
+                    // For circular lists, we need to break when we complete the cycle
+                    if (currentList.type === 'circular' && current === currentList.head) break;
+                }
+                
+                currentList.head = previous;
+                
+                if (currentList.type === 'circular') {
+                    currentList.tail.next = currentList.head;
+                    if (currentList.type === 'doubly' || currentList.type === 'circular') {
+                        currentList.head.prev = currentList.tail;
+                    }
+                }
+            }
+            
+            async function animateFastSlow() {
+                if (currentList.head === null) return;
+                
+                let slow = currentList.head;
+                let fast = currentList.head;
+                
+                highlightedNodes.add(slow);
+                highlightedNodes.add(fast);
+                drawLinkedList();
+                await sleep(animationSpeed);
+                
+                while (fast !== null && fast.next !== null) {
+                    highlightedNodes.delete(slow);
+                    highlightedNodes.delete(fast);
+                    
+                    slow = slow.next;
+                    fast = fast.next.next;
+                    
+                    // Prevent infinite loop in circular lists
+                    if (fast === currentList.head || (fast && fast.next === currentList.head)) break;
+                    
+                    highlightedNodes.add(slow);
+                    highlightedNodes.add(fast);
+                    drawLinkedList();
+                    await sleep(animationSpeed);
+                }
+                
+                // Highlight the middle node (slow pointer)
+                highlightedNodes.clear();
+                highlightedNodes.add(slow);
+                drawLinkedList();
+                await sleep(animationSpeed * 2);
+                
+                highlightedNodes.clear();
+            }
+            
+            // Drawing functions
+            function drawLinkedList() {
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                if (currentList.head === null) {
+                    drawEmptyListMessage();
+                    return;
+                }
+                
+                const nodeRadius = 30;
+                const horizontalSpacing = 100;
+                const verticalSpacing = 80;
+                const startX = 50;
+                const startY = canvas.height / 2;
+                
+                let current = currentList.head;
+                let x = startX;
+                let y = startY;
+                let index = 0;
+                const visited = new Set();
+                
+                // Draw nodes and connections
+                while (current !== null && !visited.has(current)) {
+                    visited.add(current);
+                    
+                    // Draw connection to next node
+                    if (current.next) {
+                        drawConnection(
+                            x + nodeRadius, y,
+                            x + horizontalSpacing, y,
+                            current === currentList.head && currentList.type === 'circular'
+                        );
+                    }
+                    
+                    // Draw connection to previous node for doubly linked lists
+                    if ((currentList.type === 'doubly' || currentList.type === 'circular') && current.prev) {
+                        drawConnection(
+                            x - nodeRadius, y,
+                            x - horizontalSpacing, y,
+                            false,
+                            true
+                        );
+                    }
+                    
+                    // Draw the node
+                    drawNode(x, y, nodeRadius, current.value, highlightedNodes.has(current));
+                    
+                    // Move to next position
+                    x += horizontalSpacing;
+                    current = current.next;
+                    index++;
+                    
+                    // Handle circular list visualization
+                    if (currentList.type === 'circular' && current === currentList.head) {
+                        drawConnection(
+                            x - nodeRadius, y,
+                            startX - nodeRadius, startY,
+                            true
+                        );
+                        break;
+                    }
+                    
+                    // Prevent infinite loops
+                    if (index > 20) break;
+                }
+                
+                // Draw head and tail pointers
+                drawPointer(startX - 40, startY - 50, "Head", currentList.head);
+                if (currentList.tail) {
+                    drawPointer(x - horizontalSpacing - 40, startY + 50, "Tail", currentList.tail);
+                }
+            }
+            
+            function drawNode(x, y, radius, value, isHighlighted) {
+                // Node circle
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fillStyle = isHighlighted ? getComputedStyle(document.body).getPropertyValue('--node-highlight') : 
+                                              getComputedStyle(document.body).getPropertyValue('--node-color');
+                ctx.fill();
+                ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--text-primary');
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Node value
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-primary');
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(value, x, y);
+                
+                // For doubly linked lists, draw prev pointer area
+                if (currentList.type === 'doubly' || currentList.type === 'circular') {
+                    ctx.beginPath();
+                    ctx.moveTo(x - radius, y - radius);
+                    ctx.lineTo(x - radius, y + radius);
+                    ctx.lineTo(x - radius + 10, y);
+                    ctx.closePath();
+                    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--accent-light');
+                    ctx.fill();
+                }
+            }
+            
+            function drawConnection(fromX, fromY, toX, toY, isCircular = false, isPrev = false) {
+                ctx.beginPath();
+                ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--arrow-color');
+                ctx.lineWidth = 2;
+                
+                if (isCircular) {
+                    // Draw a curved connection for circular lists
+                    const midX = (fromX + toX) / 2;
+                    const midY = fromY - 60;
+                    
+                    ctx.moveTo(fromX, fromY);
+                    ctx.quadraticCurveTo(midX, midY, toX, toY);
+                } else {
+                    ctx.moveTo(fromX, fromY);
+                    ctx.lineTo(toX, toY);
+                }
+                
+                ctx.stroke();
+                
+                // Draw arrowhead
+                const angle = Math.atan2(toY - fromY, toX - fromX);
+                const arrowLength = 10;
+                
+                ctx.beginPath();
+                ctx.moveTo(toX, toY);
+                ctx.lineTo(
+                    toX - arrowLength * Math.cos(angle - Math.PI / 6),
+                    toY - arrowLength * Math.sin(angle - Math.PI / 6)
+                );
+                ctx.lineTo(
+                    toX - arrowLength * Math.cos(angle + Math.PI / 6),
+                    toY - arrowLength * Math.sin(angle + Math.PI / 6)
+                );
+                ctx.closePath();
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--arrow-color');
+                ctx.fill();
+                
+                // For prev pointers in doubly linked lists, draw a different style
+                if (isPrev) {
+                    ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--accent-light');
+                    ctx.setLineDash([5, 3]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            }
+            
+            function drawPointer(x, y, label, node) {
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-secondary');
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(label, x, y);
+                
+                // Draw line to node
+                ctx.beginPath();
+                ctx.moveTo(x + 30, y);
+                ctx.lineTo(x + 60, y);
+                ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--text-secondary');
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+            
+            function drawEmptyListMessage() {
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-secondary');
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('The linked list is empty. Add some nodes to get started!', canvas.width / 2, canvas.height / 2);
+            }
+            
+            function updateExplanation(text) {
+                explanationContent.innerHTML = `<div class="step active">${text}</div>`;
+            }
+            
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+            
+            // Initialize with singly linked list selected
+            listTypeButtons[0].classList.add('active');
+        });
+    </script>
+</body>
+</html>
