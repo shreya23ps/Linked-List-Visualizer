@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linked List Visualizer - Modern UI</title>
+    <title>Advanced Linked List Visualizer</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -89,6 +89,9 @@
             color: var(--primary-color);
             margin-bottom: 5px;
             font-size: 2.2rem;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .header-left .subtitle {
@@ -267,6 +270,7 @@
             color: var(--text-color);
             font-weight: 600;
             transition: var(--transition);
+            cursor: pointer;
         }
 
         .type-tag.active {
@@ -286,11 +290,12 @@
 
         .node {
             display: flex;
+            flex-direction: column;
             align-items: center;
             background: var(--node-bg);
             border: 2px solid var(--node-border);
             border-radius: 10px;
-            padding: 10px;
+            padding: 15px 10px 10px;
             position: relative;
             transition: var(--transition);
             animation: nodeAppear 0.5s ease;
@@ -320,6 +325,29 @@
         .node.tail {
             border-color: var(--tail-color);
             box-shadow: 0 0 10px var(--tail-color);
+        }
+
+        .node-label {
+            position: absolute;
+            top: -10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .head-label {
+            background-color: var(--head-color);
+        }
+
+        .tail-label {
+            background-color: var(--tail-color);
+        }
+
+        .node-content {
+            display: flex;
+            align-items: center;
         }
 
         .node-value {
@@ -560,19 +588,20 @@
         /* Circular list visualization */
         .circular-container {
             position: relative;
-            width: 300px;
-            height: 300px;
+            width: 350px;
+            height: 350px;
             margin: 0 auto;
         }
 
         .circular-node {
             position: absolute;
             display: flex;
+            flex-direction: column;
             align-items: center;
             background: var(--node-bg);
             border: 2px solid var(--node-border);
             border-radius: 10px;
-            padding: 8px;
+            padding: 15px 8px 8px;
             transition: var(--transition);
         }
 
@@ -635,6 +664,88 @@
 
         .reversing {
             animation: reverseAnimation 0.5s ease;
+        }
+
+        /* Step-by-step controls */
+        .step-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .step-btn {
+            min-width: auto;
+            padding: 10px 15px;
+        }
+
+        /* Speed control */
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .speed-slider {
+            flex: 1;
+        }
+
+        /* Memory visualization */
+        .memory-visualization {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .memory-block {
+            width: 60px;
+            height: 60px;
+            background: var(--node-bg);
+            border: 1px solid var(--node-border);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: var(--transition);
+        }
+
+        .memory-block.allocated {
+            background: var(--node-value-bg);
+            color: white;
+        }
+
+        .memory-address {
+            font-size: 0.7rem;
+            color: var(--text-light);
+        }
+
+        /* Code visualization */
+        .code-visualization {
+            background: var(--node-bg);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            white-space: pre;
+            overflow-x: auto;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .code-line {
+            padding: 5px;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        .code-line.active {
+            background: rgba(76, 181, 195, 0.2);
+            color: var(--accent-color);
         }
 
         /* Responsive adjustments */
@@ -708,8 +819,8 @@
     <div class="container">
         <header>
             <div class="header-left">
-                <h1>Linked List Visualizer</h1>
-                <p class="subtitle">Visualize Singly, Doubly, and Circular Linked Lists with interactive operations</p>
+                <h1>Advanced Linked List Visualizer</h1>
+                <p class="subtitle">Interactive visualization of linked lists with step-by-step operations and memory view</p>
             </div>
             <button class="theme-toggle" id="theme-toggle">
                 <i class="fas fa-sun"></i> Light Mode
@@ -735,6 +846,10 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="memory-visualization" id="memory-visualization">
+                    <!-- Memory blocks will be dynamically added here -->
+                </div>
                 
                 <div class="stats">
                     <div class="stat-item">
@@ -746,8 +861,12 @@
                         <div class="stat-label">List Type</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value" id="memory-usage">0 KB</div>
+                        <div class="stat-value" id="memory-usage">0 B</div>
                         <div class="stat-label">Memory</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="operations-count">0</div>
+                        <div class="stat-label">Operations</div>
                     </div>
                 </div>
             </section>
@@ -799,6 +918,10 @@
                             <i class="fas fa-trash"></i> Clear List
                         </button>
                     </div>
+                    <div class="speed-control">
+                        <span>Animation Speed:</span>
+                        <input type="range" id="speed-slider" class="speed-slider" min="1" max="10" value="5">
+                    </div>
                 </div>
 
                 <div class="control-group">
@@ -823,6 +946,7 @@
                         <li>Search for values to highlight specific nodes</li>
                         <li>Reverse the list to see how pointers change</li>
                         <li>Generate random lists with the list limit</li>
+                        <li>Adjust animation speed for operations</li>
                     </ul>
                 </div>
             </section>
@@ -853,6 +977,15 @@
                     <li>Frequent insertions/deletions at the beginning</li>
                     <li>Implementing stacks or simple queues</li>
                 </ul>
+
+                <div class="code-visualization">
+                    <div class="code-line">class Node {</div>
+                    <div class="code-line">  constructor(value) {</div>
+                    <div class="code-line">    this.value = value;</div>
+                    <div class="code-line">    this.next = null;</div>
+                    <div class="code-line">  }</div>
+                    <div class="code-line">}</div>
+                </div>
             </div>
             
             <div id="doubly-info" class="algorithm-info">
@@ -879,6 +1012,16 @@
                     <li>Music playlists with next/previous functionality</li>
                     <li>Undo/redo functionality in applications</li>
                 </ul>
+
+                <div class="code-visualization">
+                    <div class="code-line">class Node {</div>
+                    <div class="code-line">  constructor(value) {</div>
+                    <div class="code-line">    this.value = value;</div>
+                    <div class="code-line">    this.next = null;</div>
+                    <div class="code-line">    this.prev = null;</div>
+                    <div class="code-line">  }</div>
+                    <div class="code-line">}</div>
+                </div>
             </div>
             
             <div id="circular-info" class="algorithm-info">
@@ -905,6 +1048,17 @@
                     <li>Music playlists that repeat</li>
                     <li>Multiplayer games with turn-based systems</li>
                 </ul>
+
+                <div class="code-visualization">
+                    <div class="code-line">class Node {</div>
+                    <div class="code-line">  constructor(value) {</div>
+                    <div class="code-line">    this.value = value;</div>
+                    <div class="code-line">    this.next = null;</div>
+                    <div class="code-line">    // For doubly circular:</div>
+                    <div class="code-line">    this.prev = null;</div>
+                    <div class="code-line">  }</div>
+                    <div class="code-line">}</div>
+                </div>
             </div>
             
             <div class="comparison-section">
@@ -1024,6 +1178,7 @@
                 this.value = value;
                 this.next = null;
                 this.prev = null;
+                this.id = Math.random().toString(36).substr(2, 9); // Unique ID for each node
             }
         }
 
@@ -1033,6 +1188,7 @@
                 this.tail = null;
                 this.size = 0;
                 this.type = type;
+                this.operationsCount = 0;
             }
 
             addToHead(value) {
@@ -1061,6 +1217,7 @@
                 }
                 
                 this.size++;
+                this.operationsCount++;
                 return newNode;
             }
 
@@ -1090,6 +1247,7 @@
                 }
                 
                 this.size++;
+                this.operationsCount++;
                 return newNode;
             }
 
@@ -1116,6 +1274,7 @@
                 }
                 
                 this.size--;
+                this.operationsCount++;
                 return removedNode;
             }
 
@@ -1150,6 +1309,7 @@
                 }
                 
                 this.size--;
+                this.operationsCount++;
                 return removedNode;
             }
 
@@ -1161,12 +1321,14 @@
                 
                 do {
                     if (current.value === value) {
+                        this.operationsCount++;
                         return { node: current, index };
                     }
                     current = current.next;
                     index++;
                 } while (current && current !== this.head && index < this.size);
                 
+                this.operationsCount++;
                 return null;
             }
 
@@ -1203,12 +1365,15 @@
                     this.tail.next = this.head;
                     if (this.type.includes('doubly')) this.head.prev = this.tail;
                 }
+                
+                this.operationsCount++;
             }
 
             clear() {
                 this.head = null;
                 this.tail = null;
                 this.size = 0;
+                this.operationsCount++;
             }
 
             isAtLimit() {
@@ -1227,18 +1392,44 @@
                     this.addToTail(value);
                 }
             }
+
+            // Get all nodes for visualization
+            getAllNodes() {
+                const nodes = [];
+                let current = this.head;
+                let index = 0;
+                
+                while (current && index < this.size) {
+                    nodes.push({
+                        node: current,
+                        isHead: current === this.head,
+                        isTail: current === this.tail,
+                        index: index
+                    });
+                    current = current.next;
+                    index++;
+                    
+                    // Safety check for circular lists
+                    if (current === this.head) break;
+                }
+                
+                return nodes;
+            }
         }
 
         // Global variables
         let currentList = new LinkedList('singly');
         let isDarkMode = true;
         let isReversing = false;
+        let animationSpeed = 500; // Default speed in ms
 
         // DOM Elements
         const nodesContainer = document.getElementById('nodes-container');
+        const memoryVisualization = document.getElementById('memory-visualization');
         const nodeCountElement = document.getElementById('node-count');
         const listTypeElement = document.getElementById('list-type');
         const memoryUsageElement = document.getElementById('memory-usage');
+        const operationsCountElement = document.getElementById('operations-count');
 
         // Initialize the application
         function init() {
@@ -1264,6 +1455,9 @@
             document.getElementById('clear-list-btn').addEventListener('click', clearList);
             document.getElementById('random-list-btn').addEventListener('click', generateRandomList);
             
+            // Speed control
+            document.getElementById('speed-slider').addEventListener('input', updateAnimationSpeed);
+            
             // Theme toggle
             document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
             
@@ -1274,6 +1468,13 @@
                     item.classList.toggle('active');
                 });
             });
+        }
+
+        // Update animation speed based on slider
+        function updateAnimationSpeed() {
+            const sliderValue = parseInt(document.getElementById('speed-slider').value);
+            // Convert slider value (1-10) to speed (1000ms - 100ms)
+            animationSpeed = 1100 - (sliderValue * 100);
         }
 
         // Switch between list types
@@ -1415,23 +1616,17 @@
         // Animate the reversal process
         async function animateReverse() {
             // Highlight nodes that will be reversed
-            const nodes = [];
-            let current = currentList.head;
-            while (current) {
-                nodes.push(current);
-                current = current.next;
-                if (current === currentList.head) break; // For circular lists
-            }
+            const nodes = currentList.getAllNodes();
             
             // Animate each node
             for (let i = 0; i < nodes.length; i++) {
-                highlightNode(nodes[i], 500);
-                await new Promise(resolve => setTimeout(resolve, 300));
+                highlightNode(nodes[i].node, animationSpeed / 2);
+                await new Promise(resolve => setTimeout(resolve, animationSpeed / 2));
             }
             
             // Show the reversal animation
             nodesContainer.classList.add('reversing');
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, animationSpeed));
             nodesContainer.classList.remove('reversing');
         }
 
@@ -1469,8 +1664,12 @@
             const memoryUsage = currentList.size * (currentList.type.includes('doubly') ? 48 : 32);
             memoryUsageElement.textContent = `${memoryUsage} B`;
             
+            // Update operations count
+            operationsCountElement.textContent = currentList.operationsCount;
+            
             // Clear the container
             nodesContainer.innerHTML = '';
+            memoryVisualization.innerHTML = '';
             
             if (currentList.size === 0) {
                 // Show empty state
@@ -1489,21 +1688,21 @@
             } else {
                 renderLinearList();
             }
+            
+            // Update memory visualization
+            updateMemoryVisualization();
         }
 
         // Render linear list (singly or doubly)
         function renderLinearList() {
-            let current = currentList.head;
-            let index = 0;
+            const nodes = currentList.getAllNodes();
             
-            while (current) {
-                const isHead = (current === currentList.head);
-                const isTail = (current === currentList.tail);
-                const nodeElement = createNodeElement(current, index, isHead, isTail);
+            nodes.forEach((nodeData, index) => {
+                const nodeElement = createNodeElement(nodeData);
                 nodesContainer.appendChild(nodeElement);
                 
                 // Add arrow if there's a next node
-                if (current.next) {
+                if (nodeData.node.next && index < nodes.length - 1) {
                     const arrow = document.createElement('div');
                     arrow.className = 'arrow';
                     if (currentList.type.includes('doubly')) {
@@ -1511,13 +1710,7 @@
                     }
                     nodesContainer.appendChild(arrow);
                 }
-                
-                current = current.next;
-                index++;
-                
-                // Safety check to prevent infinite loops
-                if (index > currentList.size) break;
-            }
+            });
         }
 
         // Render circular list
@@ -1526,37 +1719,44 @@
             circularContainer.className = 'circular-container';
             nodesContainer.appendChild(circularContainer);
             
-            const radius = 120;
-            const centerX = 150;
-            const centerY = 150;
+            const radius = 140;
+            const centerX = 175;
+            const centerY = 175;
             
-            let current = currentList.head;
-            let index = 0;
+            const nodes = currentList.getAllNodes();
             
-            do {
-                const angle = (2 * Math.PI * index) / currentList.size;
+            nodes.forEach((nodeData, index) => {
+                const angle = (2 * Math.PI * index) / nodes.length;
                 const x = centerX + radius * Math.cos(angle);
                 const y = centerY + radius * Math.sin(angle);
                 
-                const isHead = (current === currentList.head);
-                const isTail = (current === currentList.tail);
-                
                 const nodeElement = document.createElement('div');
                 nodeElement.className = 'circular-node';
-                if (isHead) nodeElement.classList.add('head');
-                if (isTail) nodeElement.classList.add('tail');
+                if (nodeData.isHead) nodeElement.classList.add('head');
+                if (nodeData.isTail) nodeElement.classList.add('tail');
                 nodeElement.style.left = `${x}px`;
                 nodeElement.style.top = `${y}px`;
                 
+                // Add labels for head and tail
+                let labelsHTML = '';
+                if (nodeData.isHead) {
+                    labelsHTML += `<div class="node-label head-label">HEAD</div>`;
+                }
+                if (nodeData.isTail) {
+                    labelsHTML += `<div class="node-label tail-label">TAIL</div>`;
+                }
+                
                 nodeElement.innerHTML = `
-                    <div class="circular-node-value">${current.value}</div>
+                    ${labelsHTML}
+                    <div class="circular-node-value">${nodeData.node.value}</div>
                 `;
                 
                 circularContainer.appendChild(nodeElement);
                 
                 // Add arrow to next node
-                if (current.next) {
-                    const nextAngle = (2 * Math.PI * (index + 1)) / currentList.size;
+                if (nodeData.node.next) {
+                    const nextIndex = (index + 1) % nodes.length;
+                    const nextAngle = (2 * Math.PI * nextIndex) / nodes.length;
                     const nextX = centerX + radius * Math.cos(nextAngle);
                     const nextY = centerY + radius * Math.sin(nextAngle);
                     
@@ -1573,40 +1773,77 @@
                     
                     circularContainer.appendChild(arrow);
                 }
-                
-                current = current.next;
-                index++;
-            } while (current && current !== currentList.head && index < currentList.size);
+            });
         }
 
         // Create a node element
-        function createNodeElement(node, index, isHead, isTail) {
+        function createNodeElement(nodeData) {
             const nodeElement = document.createElement('div');
             nodeElement.className = 'node';
-            if (isHead) nodeElement.classList.add('head');
-            if (isTail) nodeElement.classList.add('tail');
-            nodeElement.dataset.index = index;
-            nodeElement.dataset.value = node.value;
+            if (nodeData.isHead) nodeElement.classList.add('head');
+            if (nodeData.isTail) nodeElement.classList.add('tail');
+            nodeElement.dataset.index = nodeData.index;
+            nodeElement.dataset.value = nodeData.node.value;
+            nodeElement.dataset.id = nodeData.node.id;
+            
+            // Add labels for head and tail
+            let labelsHTML = '';
+            if (nodeData.isHead) {
+                labelsHTML += `<div class="node-label head-label">HEAD</div>`;
+            }
+            if (nodeData.isTail) {
+                labelsHTML += `<div class="node-label tail-label">TAIL</div>`;
+            }
             
             let pointersHTML = '';
             
             if (currentList.type.includes('doubly')) {
                 pointersHTML += `
-                    <div class="pointer prev ${!node.prev ? 'null' : ''}">
-                        ${node.prev ? '' : ''}
+                    <div class="pointer prev ${!nodeData.node.prev ? 'null' : ''}">
+                        ${nodeData.node.prev ? '' : ''}
                     </div>
                 `;
             }
             
             nodeElement.innerHTML = `
-                ${pointersHTML}
-                <div class="node-value">${node.value}</div>
-                <div class="pointer next ${!node.next ? 'null' : ''}">
-                    ${node.next ? '' : ''}
+                ${labelsHTML}
+                <div class="node-content">
+                    ${pointersHTML}
+                    <div class="node-value">${nodeData.node.value}</div>
+                    <div class="pointer next ${!nodeData.node.next ? 'null' : ''}">
+                        ${nodeData.node.next ? '' : ''}
+                    </div>
                 </div>
             `;
             
             return nodeElement;
+        }
+
+        // Update memory visualization
+        function updateMemoryVisualization() {
+            const nodes = currentList.getAllNodes();
+            
+            nodes.forEach(nodeData => {
+                const memoryBlock = document.createElement('div');
+                memoryBlock.className = 'memory-block allocated';
+                memoryBlock.innerHTML = `
+                    <div>${nodeData.node.value}</div>
+                    <div class="memory-address">${nodeData.node.id.substr(0, 6)}</div>
+                `;
+                memoryVisualization.appendChild(memoryBlock);
+            });
+            
+            // Add some free memory blocks
+            const freeBlocks = 10 - nodes.length;
+            for (let i = 0; i < freeBlocks; i++) {
+                const memoryBlock = document.createElement('div');
+                memoryBlock.className = 'memory-block';
+                memoryBlock.innerHTML = `
+                    <div>Free</div>
+                    <div class="memory-address">---</div>
+                `;
+                memoryVisualization.appendChild(memoryBlock);
+            }
         }
 
         // Highlight a specific node
@@ -1614,24 +1851,9 @@
             updateVisualization();
             
             setTimeout(() => {
-                let current = currentList.head;
-                let index = 0;
-                
-                while (current) {
-                    if (current === node) {
-                        const nodeElement = document.querySelector(`.node[data-index="${index}"]`) || 
-                                          document.querySelector(`.circular-node:nth-child(${index + 1})`);
-                        if (nodeElement) {
-                            nodeElement.classList.add(type);
-                        }
-                        break;
-                    }
-                    
-                    current = current.next;
-                    index++;
-                    
-                    // Safety check
-                    if (index > currentList.size) break;
+                const nodeElement = document.querySelector(`[data-id="${node.id}"]`);
+                if (nodeElement) {
+                    nodeElement.classList.add(type);
                 }
             }, 100);
             
@@ -1643,15 +1865,12 @@
                 
                 // Re-apply head and tail classes
                 if (currentList.head) {
-                    const headElement = document.querySelector(`.node[data-index="0"]`) || 
-                                      document.querySelector('.circular-node.head');
+                    const headElement = document.querySelector(`[data-id="${currentList.head.id}"]`);
                     if (headElement) headElement.classList.add('head');
                 }
                 
                 if (currentList.tail && currentList.size > 1) {
-                    const tailIndex = currentList.size - 1;
-                    const tailElement = document.querySelector(`.node[data-index="${tailIndex}"]`) || 
-                                      document.querySelector('.circular-node.tail');
+                    const tailElement = document.querySelector(`[data-id="${currentList.tail.id}"]`);
                     if (tailElement) tailElement.classList.add('tail');
                 }
             }, duration);
