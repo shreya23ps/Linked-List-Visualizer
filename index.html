@@ -21,6 +21,8 @@
             --success-color: #68d391;
             --warning-color: #f6ad55;
             --danger-color: #fc8181;
+            --head-color: #68d391;
+            --tail-color: #f6ad55;
             --border-radius: 12px;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             --transition: all 0.3s ease;
@@ -41,6 +43,8 @@
             --success-color: #48bb78;
             --warning-color: #ed8936;
             --danger-color: #f56565;
+            --head-color: #48bb78;
+            --tail-color: #ed8936;
         }
 
         * {
@@ -308,6 +312,16 @@
             box-shadow: 0 0 15px var(--accent-color);
         }
 
+        .node.head {
+            border-color: var(--head-color);
+            box-shadow: 0 0 10px var(--head-color);
+        }
+
+        .node.tail {
+            border-color: var(--tail-color);
+            box-shadow: 0 0 10px var(--tail-color);
+        }
+
         .node-value {
             background: var(--node-value-bg);
             color: white;
@@ -567,6 +581,16 @@
             box-shadow: 0 0 15px var(--accent-color);
         }
 
+        .circular-node.head {
+            border-color: var(--head-color);
+            box-shadow: 0 0 10px var(--head-color);
+        }
+
+        .circular-node.tail {
+            border-color: var(--tail-color);
+            box-shadow: 0 0 10px var(--tail-color);
+        }
+
         .circular-node-value {
             background: var(--node-value-bg);
             color: white;
@@ -593,6 +617,24 @@
             top: -4px;
             border: 6px solid transparent;
             border-left-color: var(--pointer-color);
+        }
+
+        /* Animation for reversing */
+        @keyframes reverseAnimation {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+                background-color: var(--accent-color);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .reversing {
+            animation: reverseAnimation 0.5s ease;
         }
 
         /* Responsive adjustments */
@@ -759,6 +801,19 @@
                     </div>
                 </div>
 
+                <div class="control-group">
+                    <h3><i class="fas fa-random"></i> Random List</h3>
+                    <div>
+                        <label for="list-limit">List Limit:</label>
+                        <input type="number" id="list-limit" placeholder="Max nodes" min="1" max="20" value="10">
+                    </div>
+                    <div class="button-group">
+                        <button id="random-list-btn" class="warning">
+                            <i class="fas fa-random"></i> Generate Random List
+                        </button>
+                    </div>
+                </div>
+
                 <div class="instructions">
                     <h4><i class="fas fa-graduation-cap"></i> How to Use:</h4>
                     <ul>
@@ -767,6 +822,7 @@
                         <li>Use "Remove Head/Tail" to delete nodes from the list</li>
                         <li>Search for values to highlight specific nodes</li>
                         <li>Reverse the list to see how pointers change</li>
+                        <li>Generate random lists with the list limit</li>
                     </ul>
                 </div>
             </section>
@@ -980,6 +1036,8 @@
             }
 
             addToHead(value) {
+                if (this.isAtLimit()) return null;
+                
                 const newNode = new ListNode(value);
                 
                 if (!this.head) {
@@ -1007,6 +1065,8 @@
             }
 
             addToTail(value) {
+                if (this.isAtLimit()) return null;
+                
                 const newNode = new ListNode(value);
                 
                 if (!this.tail) {
@@ -1150,11 +1210,29 @@
                 this.tail = null;
                 this.size = 0;
             }
+
+            isAtLimit() {
+                const limit = parseInt(document.getElementById('list-limit').value) || 10;
+                return this.size >= limit;
+            }
+
+            // Method to generate a random list
+            generateRandomList() {
+                this.clear();
+                const limit = parseInt(document.getElementById('list-limit').value) || 10;
+                const count = Math.min(limit, Math.floor(Math.random() * limit) + 1);
+                
+                for (let i = 0; i < count; i++) {
+                    const value = Math.floor(Math.random() * 90) + 10; // Values between 10 and 99
+                    this.addToTail(value);
+                }
+            }
         }
 
         // Global variables
         let currentList = new LinkedList('singly');
         let isDarkMode = true;
+        let isReversing = false;
 
         // DOM Elements
         const nodesContainer = document.getElementById('nodes-container');
@@ -1184,6 +1262,7 @@
             document.getElementById('clear-search-btn').addEventListener('click', clearSearch);
             document.getElementById('reverse-btn').addEventListener('click', reverseList);
             document.getElementById('clear-list-btn').addEventListener('click', clearList);
+            document.getElementById('random-list-btn').addEventListener('click', generateRandomList);
             
             // Theme toggle
             document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
@@ -1236,18 +1315,28 @@
 
         // Add node to head
         function addToHead() {
-            const value = parseInt(document.getElementById('node-value').value) || 1;
+            if (currentList.isAtLimit()) {
+                showTemporaryMessage(`List limit reached! Maximum nodes: ${document.getElementById('list-limit').value}`, 'error');
+                return;
+            }
+            
+            const value = parseInt(document.getElementById('node-value').value) || 10;
             currentList.addToHead(value);
             updateVisualization();
-            highlightNode(currentList.head, 1500);
+            highlightNode(currentList.head, 1500, 'head');
         }
 
         // Add node to tail
         function addToTail() {
-            const value = parseInt(document.getElementById('node-value').value) || 1;
+            if (currentList.isAtLimit()) {
+                showTemporaryMessage(`List limit reached! Maximum nodes: ${document.getElementById('list-limit').value}`, 'error');
+                return;
+            }
+            
+            const value = parseInt(document.getElementById('node-value').value) || 10;
             currentList.addToTail(value);
             updateVisualization();
-            highlightNode(currentList.tail, 1500);
+            highlightNode(currentList.tail, 1500, 'tail');
         }
 
         // Remove node from head
@@ -1284,7 +1373,7 @@
 
         // Search for a value
         function searchValue() {
-            const value = parseInt(document.getElementById('node-value').value) || 1;
+            const value = parseInt(document.getElementById('node-value').value) || 10;
             const result = currentList.search(value);
             
             if (result) {
@@ -1300,16 +1389,50 @@
             updateVisualization();
         }
 
-        // Reverse the list
+        // Reverse the list with animation
         function reverseList() {
             if (currentList.size < 2) {
                 showTemporaryMessage('List needs at least 2 nodes to reverse', 'warning');
                 return;
             }
             
-            currentList.reverse();
-            updateVisualization();
-            showTemporaryMessage('List reversed successfully!');
+            if (isReversing) return;
+            isReversing = true;
+            
+            // Disable buttons during animation
+            document.getElementById('reverse-btn').disabled = true;
+            
+            // Animate the reversal process
+            animateReverse().then(() => {
+                currentList.reverse();
+                updateVisualization();
+                showTemporaryMessage('List reversed successfully!');
+                document.getElementById('reverse-btn').disabled = false;
+                isReversing = false;
+            });
+        }
+
+        // Animate the reversal process
+        async function animateReverse() {
+            // Highlight nodes that will be reversed
+            const nodes = [];
+            let current = currentList.head;
+            while (current) {
+                nodes.push(current);
+                current = current.next;
+                if (current === currentList.head) break; // For circular lists
+            }
+            
+            // Animate each node
+            for (let i = 0; i < nodes.length; i++) {
+                highlightNode(nodes[i], 500);
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+            
+            // Show the reversal animation
+            nodesContainer.classList.add('reversing');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            nodesContainer.classList.remove('reversing');
         }
 
         // Clear the entire list
@@ -1324,6 +1447,13 @@
                 updateVisualization();
                 showTemporaryMessage('List cleared successfully!');
             }
+        }
+
+        // Generate a random list
+        function generateRandomList() {
+            currentList.generateRandomList();
+            updateVisualization();
+            showTemporaryMessage('Random list generated successfully!');
         }
 
         // Update the visualization
@@ -1367,7 +1497,9 @@
             let index = 0;
             
             while (current) {
-                const nodeElement = createNodeElement(current, index);
+                const isHead = (current === currentList.head);
+                const isTail = (current === currentList.tail);
+                const nodeElement = createNodeElement(current, index, isHead, isTail);
                 nodesContainer.appendChild(nodeElement);
                 
                 // Add arrow if there's a next node
@@ -1406,8 +1538,13 @@
                 const x = centerX + radius * Math.cos(angle);
                 const y = centerY + radius * Math.sin(angle);
                 
+                const isHead = (current === currentList.head);
+                const isTail = (current === currentList.tail);
+                
                 const nodeElement = document.createElement('div');
                 nodeElement.className = 'circular-node';
+                if (isHead) nodeElement.classList.add('head');
+                if (isTail) nodeElement.classList.add('tail');
                 nodeElement.style.left = `${x}px`;
                 nodeElement.style.top = `${y}px`;
                 
@@ -1443,9 +1580,11 @@
         }
 
         // Create a node element
-        function createNodeElement(node, index) {
+        function createNodeElement(node, index, isHead, isTail) {
             const nodeElement = document.createElement('div');
             nodeElement.className = 'node';
+            if (isHead) nodeElement.classList.add('head');
+            if (isTail) nodeElement.classList.add('tail');
             nodeElement.dataset.index = index;
             nodeElement.dataset.value = node.value;
             
@@ -1471,7 +1610,7 @@
         }
 
         // Highlight a specific node
-        function highlightNode(node, duration = 2000) {
+        function highlightNode(node, duration = 2000, type = 'highlight') {
             updateVisualization();
             
             setTimeout(() => {
@@ -1483,7 +1622,7 @@
                         const nodeElement = document.querySelector(`.node[data-index="${index}"]`) || 
                                           document.querySelector(`.circular-node:nth-child(${index + 1})`);
                         if (nodeElement) {
-                            nodeElement.classList.add('highlight');
+                            nodeElement.classList.add(type);
                         }
                         break;
                     }
@@ -1499,8 +1638,22 @@
             // Remove highlight after duration
             setTimeout(() => {
                 document.querySelectorAll('.node, .circular-node').forEach(el => {
-                    el.classList.remove('highlight');
+                    el.classList.remove('highlight', 'head', 'tail');
                 });
+                
+                // Re-apply head and tail classes
+                if (currentList.head) {
+                    const headElement = document.querySelector(`.node[data-index="0"]`) || 
+                                      document.querySelector('.circular-node.head');
+                    if (headElement) headElement.classList.add('head');
+                }
+                
+                if (currentList.tail && currentList.size > 1) {
+                    const tailIndex = currentList.size - 1;
+                    const tailElement = document.querySelector(`.node[data-index="${tailIndex}"]`) || 
+                                      document.querySelector('.circular-node.tail');
+                    if (tailElement) tailElement.classList.add('tail');
+                }
             }, duration);
         }
 
